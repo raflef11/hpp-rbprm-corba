@@ -212,6 +212,11 @@ namespace hpp {
         virtual hpp::floatSeq* runLimbSampleAnalysis(const char* limbname, const char* analysis, double isstatic) throw (hpp::Error);
         virtual void dumpProfile(const char* logFile) throw (hpp::Error);
 
+        virtual void setMaxContactBreaks(unsigned short maxContactBreaks) throw (hpp::Error);
+        virtual void addRequiredLimb(const char * limb) throw (hpp::Error);
+        virtual void removeRequiredLimb(const char * limb) throw (hpp::Error);
+        virtual void clearRequiredLimbs() throw (hpp::Error);
+
         public:
         void SetProblemSolver (hpp::core::ProblemSolverPtr_t problemSolver);
 

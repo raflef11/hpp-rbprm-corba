@@ -2175,6 +2175,31 @@ assert(s2 == s1 +1);
         }
     }
 
+    void RbprmBuilder::setMaxContactBreaks(unsigned short maxContactBreaks) throw (hpp::Error)
+    {
+        if(!fullBodyLoaded_)
+            throw Error ("No full body robot was loaded");
+        fullBody_->setMaxContactBreaks(maxContactBreaks);
+    }
+    void RbprmBuilder::addRequiredLimb(const char * limb) throw (hpp::Error)
+    {
+        if(!fullBodyLoaded_)
+            throw Error ("No full body robot was loaded");
+        fullBody_->addRequiredLimb(std::string(limb));
+    }
+    void RbprmBuilder::removeRequiredLimb(const char * limb) throw (hpp::Error)
+    {
+        if(!fullBodyLoaded_)
+            throw Error ("No full body robot was loaded");
+        fullBody_->removeRequiredLimb(std::string(limb));
+    }
+    void RbprmBuilder::clearRequiredLimbs() throw (hpp::Error)
+    {
+        if(!fullBodyLoaded_)
+            throw Error ("No full body robot was loaded");
+        fullBody_->clearRequiredLimbs();
+    }
+
     void RbprmBuilder::SetProblemSolver (hpp::core::ProblemSolverPtr_t problemSolver)
     {
         problemSolver_ = problemSolver;

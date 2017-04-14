@@ -867,3 +867,19 @@ class FullBody (object):
     def getJacobianCenterOfMass (self):
         return self.client.basic.robot.getJacobianCenterOfMass ()
     ##\}
+
+    ## Set the maximum number of contacts allowed to be broken
+    def setMaxContactBreaks (self, maxContactBreaks):
+        self.client.rbprm.rbprm.setMaxContactBreaks(maxContactBreaks)
+
+    ## Add a required (mandatory) limb in contact
+    def addRequiredLimb(self, limb):
+        self.client.rbprm.rbprm.addRequiredLimb(limb)
+
+    ## Remove a required limb in contact (the limb will not be mandatory)
+    def removeRequiredLimb(self, limb):
+        self.client.rbprm.rbprm.removeRequiredLimb(limb)
+
+    ## Clear the list of required limbs in contact
+    def clearRequiredLimbs(self):
+        self.client.rbprm.rbprm.clearRequiredLimbs()

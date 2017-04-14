@@ -508,6 +508,21 @@ module hpp
     /// \param logFile name of the file where to dump the profiling data
     void dumpProfile(in string logFile) raises (Error);
 
+    /// set the maximum number of contacts allowed to be broken
+    /// \param maxContactBreaks The desired maximum number of contact breaks
+    void setMaxContactBreaks(in unsigned short maxContactBreaks) raises (Error);
+
+    /// add a required (mandatory) limb in contact
+    /// \param limb The required limb in contact
+    void addRequiredLimb(in string limb) raises (Error);
+
+    /// remove a required limb in contact (the limb will not be mandatory)
+    /// \param limb The limb we want to remove from the list of required limbs
+    void removeRequiredLimb(in string limb) raises (Error);
+
+    /// clear the list of required limbs in contact
+    void clearRequiredLimbs() raises (Error);
+
   }; // interface Robot
   }; // module rbprm
   }; // module corbaserver

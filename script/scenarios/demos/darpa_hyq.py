@@ -97,7 +97,6 @@ configs = []
 from hpp.gepetto import PathPlayer
 pp = PathPlayer (fullBody.client.basic, r)
 
-
 from hpp.corbaserver.rbprm.tools.cwc_trajectory_helper import step, clean,stats, saveAllData, play_traj
 
 	
@@ -115,7 +114,6 @@ def act(i, numOptim = 0, use_window = 0, friction = 0.5, optim_effectors = True,
 def play(frame_rate = 1./24.):
 	play_traj(fullBody,pp,frame_rate)
 	
-
 import time
 
 #DEMO METHODS

@@ -150,9 +150,9 @@ def genPlan(stepsize=0.06):
 	tp.r.client.gui.setVisibility("toto", "OFF")
 	tp.r.client.gui.setVisibility("hyq_trunk_large", "OFF")
 	global configs
-	start = time.clock() 
+	start = time.clock()
 	configs = fullBody.interpolate(stepsize, 5, 5, True)
-	end = time.clock() 
+	end = time.clock()
 	print "Contact plan generated in " + str(end-start) + "seconds"
 	
 def contactPlan(step = 0.5):
@@ -162,7 +162,7 @@ def contactPlan(step = 0.5):
 	tp.r.client.gui.setVisibility("hyq_trunk_large", "OFF")
 	for i in range(0,len(configs)):
 		r(configs[i]);
-		time.sleep(step)		
+		time.sleep(step)
 		
 		
 def a():

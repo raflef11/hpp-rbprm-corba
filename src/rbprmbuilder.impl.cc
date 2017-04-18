@@ -2199,6 +2199,12 @@ assert(s2 == s1 +1);
             throw Error ("No full body robot was loaded");
         fullBody_->clearRequiredLimbs();
     }
+    void RbprmBuilder::printRequiredLimbs() throw (hpp::Error)
+    {
+        if(!fullBodyLoaded_)
+            throw Error ("No full body robot was loaded");
+        fullBody_->printRequiredLimbs();
+    }
 
     void RbprmBuilder::SetProblemSolver (hpp::core::ProblemSolverPtr_t problemSolver)
     {

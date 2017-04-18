@@ -883,3 +883,7 @@ class FullBody (object):
     ## Clear the list of required limbs in contact
     def clearRequiredLimbs(self):
         self.client.rbprm.rbprm.clearRequiredLimbs()
+
+    ## Print the required limbs list
+    def printRequiredLimbs(self):
+        self.client.rbprm.rbprm.printRequiredLimbs()

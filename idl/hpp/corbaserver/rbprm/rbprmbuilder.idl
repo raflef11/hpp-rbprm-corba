@@ -523,6 +523,9 @@ module hpp
     /// clear the list of required limbs in contact
     void clearRequiredLimbs() raises (Error);
 
+    /// print the required limbs list
+    void printRequiredLimbs() raises (Error);
+
   }; // interface Robot
   }; // module rbprm
   }; // module corbaserver

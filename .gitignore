@@ -33,3 +33,5 @@ build/
 profile/logs
 
 CMakeLists.txt.user
+
+build-rel/

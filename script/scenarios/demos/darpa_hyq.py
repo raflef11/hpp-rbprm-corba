@@ -188,4 +188,4 @@ def e():
 print "Root path generated in " + str(tp.t) + " ms."
 
 #~ d();e()
-d(0.0005); e()
+#d(0.0005);

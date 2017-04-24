@@ -221,5 +221,5 @@ def e():
 	contactPlan()
 	
 print "Root path generated in " + str(tp.t) + " ms."
-	
+
 d(0.01); e()

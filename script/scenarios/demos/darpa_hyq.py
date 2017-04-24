@@ -189,3 +189,14 @@ print "Root path generated in " + str(tp.t) + " ms."
 
 #~ d();e()
 #d(0.0005);
+
+import sys
+print ""
+fullBody.addRequiredLimb("rhleg")
+fullBody.addRequiredLimb("rfleg")
+fullBody.addRequiredLimb("lhleg")
+fullBody.addRequiredLimb("lfleg")
+print "Required limbs :"
+sys.stdout.flush()
+fullBody.printRequiredLimbs()
+d(0.0005)

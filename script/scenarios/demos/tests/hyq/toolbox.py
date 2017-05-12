@@ -193,13 +193,29 @@ def contains(point, polygon): # We assume the the polygon is sorted (each next i
 # @return The orthogonal projection of the point on the plane
 def orthogonalProjection(point, plane):
 	# parameters consistence checking
-	if len(point) != 3
+	if len(point) != 3:
 		raise MyEx(0)
-	if len(plane) != 4
+	if len(plane) != 4:
 		raise MyEx(3)
 
 	k = (plane[0]*point[0] + plane[1]*point[1] + plane[2]*point[2] + plane[3])/(math.pow(plane[0], 2) + math.pow(plane[1], 2) + math.pow(plane[2], 2))
 	return [(point[0] - k*plane[0]), (point[1] - k*plane[1]), (point[2] - k*plane[2])]
+
+## NUMERICACCURACY
+# Get the numeric accuracy of a number (the number of decimals)
+#
+# @param n The considered number
+#
+# @return The number of decimals of n (its numeric accuracy)
+def numericAccuracy(n):
+	p = 0
+	mul_r = round(n * math.pow(10, p))
+	mul_d = (n * math.pow(10, p))
+	while abs(mul_d - mul_r) >= 0.001:
+		p += 1
+		mul_r = round(n * math.pow(10, p))
+		mul_d = (n * math.pow(10, p))
+	return p
 
 def isValidZMP(convexHull, comPos, g):
 	pass

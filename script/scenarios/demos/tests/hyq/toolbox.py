@@ -6,7 +6,8 @@ class MyEx(Exception):
 					0 : "A 3D vector must contain exactly 3 elements",
 					1 : "Bad AngleEnum parameter",
 					2 : "A 2D vector must contain exactly 2 elements",
-					3 : "A plane must contain exactly 4 elements, [a, b, c, d] such as: ax + by + cz + d = 0"
+					3 : "A plane must contain exactly 4 elements, [a, b, c, d] such as: ax + by + cz + d = 0",
+					4 : "The maximum allowed precision for a given number was exceeded"
 				 }
 
 	def __init__(self, val):
@@ -201,31 +202,6 @@ def orthogonalProjection(point, plane):
 	k = (plane[0]*point[0] + plane[1]*point[1] + plane[2]*point[2] + plane[3])/(math.pow(plane[0], 2) + math.pow(plane[1], 2) + math.pow(plane[2], 2))
 	return [(point[0] - k*plane[0]), (point[1] - k*plane[1]), (point[2] - k*plane[2])]
 
-## NUMERICACCURACY
-# Get the numeric accuracy of a number (the number of decimals)
-#
-# @param n The considered number
-#
-# @return The number of decimals of n (its numeric accuracy)
-def numericAccuracy(n):
-	p = 0
-	mul_r = round(n * math.pow(10, p))
-	mul_d = (n * math.pow(10, p))
-	while abs(mul_d - mul_r) >= 0.001:
-		p += 1
-		mul_r = round(n * math.pow(10, p))
-		mul_d = (n * math.pow(10, p))
-	return p
-
-## OPTIMALSTEP
-# Get the optimal numeric incremental step in order to look over the values of each elements of a table
-#
-# @param crossingPoints The list of values
-#
-# @return The optimal step for the specified list of values
-def optimalStep(crossingPoints):
-	pass
-
 ## POINTCLOUDSMANAGER
 # Class to operate on point clouds, also used as a namespace
 class PointCloudsManager:
@@ -236,10 +212,6 @@ class PointCloudsManager:
 
 	@staticmethod
 	def convexHull2D(pointCloud2D):
-		pass
-
-	@staticmethod
-	def display2D(pointCloud2D, highLightConvexhull = False):
 		pass
 
 ## ISVALIDZMP

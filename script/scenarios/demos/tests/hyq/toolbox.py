@@ -5,7 +5,8 @@ class MyEx(Exception):
 	myex_table = {
 					0 : "A 3D vector must contain exactly 3 elements",
 					1 : "Bad AngleEnum parameter",
-					2 : "A 2D vector must contain exactly 2 elements"
+					2 : "A 2D vector must contain exactly 2 elements",
+					3 : "A plane must contain exactly 4 elements, [a, b, c, d] such as: ax + by + cz + d = 0"
 				 }
 
 	def __init__(self, val):
@@ -158,6 +159,22 @@ def contains(point, polygon): # We assume the the polygon is sorted (each next i
 	else: # impossible case
 		return "Impossible case"
 
+## ORTHOGONALPROJECTION
+# Compute the orthogonal projection of a 3D-point on a given plane
+#
+# @param point The considered 3D-point
+# @param plane The plane [a, b, c, d] on which we want to project the point
+#
+# @return The orthogonal projection of the point on the plane
+def orthogonalProjection(point, plane):
+	# parameters consistence checking
+	if len(point) != 3
+		raise MyEx(0)
+	if len(plane) != 4
+		raise MyEx(3)
+
+	k = (plane[0]*point[0] + plane[1]*point[1] + plane[2]*point[2] + plane[3])/(math.pow(plane[0], 2) + math.pow(plane[1], 2) + math.pow(plane[2], 2))
+	return [(point[0] - k*plane[0]), (point[1] - k*plane[1]), (point[2] - k*plane[2])]
 
 def isValidZMP(convexHull, comPos, g):
 	pass

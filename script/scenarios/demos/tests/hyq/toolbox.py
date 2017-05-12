@@ -160,7 +160,7 @@ def orientedAngle2D(center, base, goal):
 # @param point The point we consider
 # @param polygon The concerned polygon
 #
-# @return true if the point is inside the polygon, false otherwise
+# @return True if the point is inside the polygon, False otherwise
 def isInside(point, polygon): # We assume the the polygon is sorted (each next index lead to the real next point)
 	# parameters consistence checking
 	if len(point) != 2:
@@ -226,24 +226,45 @@ def numericAccuracy(n):
 def optimalStep(crossingPoints):
 	pass
 
+## POINTCLOUDSMANAGER
+# Class to operate on point clouds, also used as a namespace
 class PointCloudsManager:
 
 	@staticmethod
-	def scanningProcess(basePoint, subset, angle, sortedSet, i, higher, direction):
+	def scanningProcess2D(basePoint, subset, angle, sortedSet, i, higher, direction):
 		pass
 
 	@staticmethod
-	def convexHull(pointCloud):
+	def convexHull2D(pointCloud2D):
 		pass
 
 	@staticmethod
-	def display(pointCloud, highLightConvexhull = False):
+	def display2D(pointCloud2D, highLightConvexhull = False):
 		pass
 
-def isValidZMP(convexHull, comPos, g):
+## ISVALIDZMP
+# Compute the capture point criterion validation
+# The goal is to extend the capture point criterion (using the Zero-Moment-Point) to a 3D case (non coplanar contacts)
+#
+# @param convexHull The convex hull of the support polygon
+# @param comPos The position of the center of mass of the robot
+# @param comAccel The center of mass acceleration
+# @param g The gravity acceleration, default value: 9.80665 m.s-1
+#
+# @return True if the criterion is validated, False otherwise
+def isValidZMP(convexHull, comPos, comAccel, g = 9.80665):
 	pass
 
-def evalZMP(convexHull, comPos, g):
+## EVALZMP
+# Evaluate a contact configuration in accordance with the capture point criterion
+#
+# @param convexHull The convex hull of the support polygon
+# @param comPos The position of the center of mass of the robot
+# @param comAccel The center of mass acceleration
+# @param g The gravity acceleration, default value: 9.80665 m.s-1
+#
+# @return The cost of the current contact configuration
+def evalZMP(convexHull, comPos, comAccel, g = 9.80665):
 	pass
 
 # buildQuaternion example

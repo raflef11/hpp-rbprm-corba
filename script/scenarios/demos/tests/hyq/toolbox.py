@@ -1,13 +1,14 @@
 import math
 
+## MYEX (INHERITS EXCEPTION)
+# Class derived from Exception class, used to implement the specific exceptions of the toolbox
 class MyEx(Exception):
 	# class (static) attribute
 	myex_table = {
 					0 : "A 3D vector must contain exactly 3 elements",
 					1 : "Bad AngleEnum parameter",
 					2 : "A 2D vector must contain exactly 2 elements",
-					3 : "A plane must contain exactly 4 elements, [a, b, c, d] such as: ax + by + cz + d = 0",
-					4 : "The maximum allowed precision for a given number was exceeded"
+					3 : "A plane must contain exactly 4 elements, [a, b, c, d] such as: ax + by + cz + d = 0"
 				 }
 
 	def __init__(self, val):
@@ -26,6 +27,8 @@ class MyEx(Exception):
 	def __call__(self):
 		print "MyEx code " + str(self.value) + " : " + self.message
 
+## ANGLEENUM
+# Class used as an enumeration to describe angle units
 class AngleEnum:
 	# class (static) attribute
 	(RADIANS, DEGREES) = range(2)

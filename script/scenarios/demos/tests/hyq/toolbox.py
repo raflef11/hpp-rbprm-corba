@@ -66,12 +66,38 @@ def buildQuaternion(vector, angle, convention):
 
 	return res
 
+## ANGLE2D
+# Get the angle from 3 2D-points (not oriented)
+#
+# @param center The center point of rotation
+# @param end1 The point which gives the first vector (end1 - center)
+# @param end2 The point which gives the second vector (end2 - center)
+#
+# @return The angle between the two vectors
+def angle2D(center, end1, end2):
+	# parameters consistence checking
+	if (len(center) != 2) or (len(end1) != 2) or (len(end2) != 2):
+		raise MyEx(2)
+
+	# get the two vectors
+	v1 = []; v2 = []
+	v1.append(end1[0] - center[0]); v1.append(end1[1] - center[1])
+	v2.append(end2[0] - center[0]); v2.append(end2[1] - center[1])
+
+	# get their norms
+	n1 = math.sqrt(math.pow(v1[0], 2) + math.pow(v1[1], 2))
+	n2 = math.sqrt(math.pow(v2[0], 2) + math.pow(v2[1], 2))
+
+	# calculate the angle between the two vectors
+	dotProduct = v1[0]*v2[0] + v1[1]*v2[1]
+	return math.acos(dotProduct/(n1*n2))
+
 ## ORIENTEDANGLE2D
 # Get the oriented angle from 3 2D-points
 #
 # @param center The center point of rotation
-# @param base The point which give the base vector (base - center)
-# @param goal The point which give the goal vector (goal - center)
+# @param base The point which gives the base vector (base - center)
+# @param goal The point which gives the goal vector (goal - center)
 #
 # @return The oriented angle between the base vector and the goal vector
 def orientedAngle2D(center, base, goal):
@@ -80,8 +106,7 @@ def orientedAngle2D(center, base, goal):
 		raise MyEx(2)
 
 	# get the two vectors
-	vbase = []
-	vgoal = []
+	vbase = [];	vgoal = []
 	vbase.append(base[0] - center[0]); vbase.append(base[1] - center[1])
 	vgoal.append(goal[0] - center[0]); vgoal.append(goal[1] - center[1])
 

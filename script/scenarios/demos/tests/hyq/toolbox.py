@@ -217,6 +217,29 @@ def numericAccuracy(n):
 		mul_d = (n * math.pow(10, p))
 	return p
 
+## OPTIMALSTEP
+# Get the optimal numeric incremental step in order to look over the values of each elements of a table
+#
+# @param crossingPoints The list of values
+#
+# @return The optimal step for the specified list of values
+def optimalStep(crossingPoints):
+	pass
+
+class PointCloudsManager:
+
+	@staticmethod
+	def scanningProcess(basePoint, subset, angle, sortedSet, i, higher, direction):
+		pass
+
+	@staticmethod
+	def convexHull(pointCloud):
+		pass
+
+	@staticmethod
+	def display(pointCloud, highLightConvexhull = False):
+		pass
+
 def isValidZMP(convexHull, comPos, g):
 	pass
 

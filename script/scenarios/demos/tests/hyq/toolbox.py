@@ -33,9 +33,9 @@ class AngleEnum:
 ## BUILDQUATERNION
 # Construct a quaternion from a rotation axis and a rotation angle around it
 #
-# @param vector The rotation axis
-# @param angle The rotation angle
-# @param convention The angle unit (radians or degrees)
+# @param [In] vector The rotation axis
+# @param [In] angle The rotation angle
+# @param [In] convention The angle unit (radians or degrees)
 #
 # @return The normalized quaternion in the following convention --> [w, x, y, z]
 def buildQuaternion(vector, angle, convention):
@@ -70,9 +70,9 @@ def buildQuaternion(vector, angle, convention):
 ## ANGLE2D
 # Get the angle from 3 2D-points (not oriented)
 #
-# @param center The center point of rotation
-# @param end1 The point which gives the first vector (end1 - center)
-# @param end2 The point which gives the second vector (end2 - center)
+# @param [In] center The center point of rotation
+# @param [In] end1 The point which gives the first vector (end1 - center)
+# @param [In] end2 The point which gives the second vector (end2 - center)
 #
 # @return The angle between the two vectors
 def angle2D(center, end1, end2):
@@ -96,9 +96,9 @@ def angle2D(center, end1, end2):
 ## ORIENTEDANGLE2D
 # Get the oriented angle from 3 2D-points
 #
-# @param center The center point of rotation
-# @param base The point which gives the base vector (base - center)
-# @param goal The point which gives the goal vector (goal - center)
+# @param [In] center The center point of rotation
+# @param [In] base The point which gives the base vector (base - center)
+# @param [In] goal The point which gives the goal vector (goal - center)
 #
 # @return The oriented angle between the base vector and the goal vector
 def orientedAngle2D(center, base, goal):
@@ -158,8 +158,8 @@ def orientedAngle2D(center, base, goal):
 ## ISINSIDE
 # Check if a point is inside a polygon (convex or not)
 #
-# @param point The point we consider
-# @param polygon The concerned polygon
+# @param [In] point The point we consider
+# @param [In] polygon The concerned polygon
 #
 # @return True if the point is inside the polygon, False otherwise
 def isInside(point, polygon): # We assume the the polygon is sorted (each next index lead to the real next point)
@@ -188,8 +188,8 @@ def isInside(point, polygon): # We assume the the polygon is sorted (each next i
 ## ORTHOGONALPROJECTION
 # Compute the orthogonal projection of a 3D-point on a given plane
 #
-# @param point The considered 3D-point
-# @param plane The plane [a, b, c, d] on which we want to project the point
+# @param [In] point The considered 3D-point
+# @param [In] plane The plane [a, b, c, d] on which we want to project the point
 #
 # @return The orthogonal projection of the point on the plane
 def orthogonalProjection(point, plane):
@@ -206,10 +206,28 @@ def orthogonalProjection(point, plane):
 # Class to operate on point clouds, also used as a namespace
 class PointCloudsManager:
 
+	## SCANNINGPROCESS2D (STATIC)
+	# Method used in convex hull computation, not aimed to be used outside
+	# The parameters are not described because this function is private (but Python does not know this concept), you do not have to use this function anyway
+	#
+	# @param [In] basePoint ...
+	# @param [InOut] subset ...
+	# @param [In] angle (must be a InOut param but Python does not allow to pass a double by reference, so this parameter will be returned at the end of the function)
+	# @param [In] currentPoint ...
+	# @param [In] higher It equals True if currentPoint is above basePoint, False otherwise
+	# @param [In] direction If True, scan to the right. Otherwise, scan to the left
+	#
+	# @return angle (because Python cannot pass a double by reference)
 	@staticmethod
-	def scanningProcess2D(basePoint, subset, angle, sortedSet, i, higher, direction):
+	def scanningProcess2D(basePoint, subset, angle, currentPoint, higher, direction):
 		pass
 
+	## CONVEXHULL2D (STATIC)
+	# Method to compute the 2D convex hull of a 2D point cloud
+	#
+	# @param [In] pointCloud2D The considered 2D point cloud
+	#
+	# @return The convex hull of the specified 2D point cloud
 	@staticmethod
 	def convexHull2D(pointCloud2D):
 		pass
@@ -218,10 +236,10 @@ class PointCloudsManager:
 # Compute the capture point criterion validation
 # The goal is to extend the capture point criterion (using the Zero-Moment-Point) to a 3D case (non coplanar contacts)
 #
-# @param convexHull The convex hull of the support polygon
-# @param comPos The position of the center of mass of the robot
-# @param comAccel The center of mass acceleration
-# @param g The gravity acceleration, default value: 9.80665 m.s-1
+# @param [In] convexHull The convex hull of the support polygon
+# @param [In] comPos The position of the center of mass of the robot
+# @param [In] comAccel The center of mass acceleration
+# @param [In] g The gravity acceleration, default value: 9.80665 m.s-1
 #
 # @return True if the criterion is validated, False otherwise
 def isValidZMP(convexHull, comPos, comAccel, g = 9.80665):
@@ -230,10 +248,10 @@ def isValidZMP(convexHull, comPos, comAccel, g = 9.80665):
 ## EVALZMP
 # Evaluate a contact configuration in accordance with the capture point criterion
 #
-# @param convexHull The convex hull of the support polygon
-# @param comPos The position of the center of mass of the robot
-# @param comAccel The center of mass acceleration
-# @param g The gravity acceleration, default value: 9.80665 m.s-1
+# @param [In] convexHull The convex hull of the support polygon
+# @param [In] comPos The position of the center of mass of the robot
+# @param [In] comAccel The center of mass acceleration
+# @param [In] g The gravity acceleration, default value: 9.80665 m.s-1
 #
 # @return The cost of the current contact configuration
 def evalZMP(convexHull, comPos, comAccel, g = 9.80665):

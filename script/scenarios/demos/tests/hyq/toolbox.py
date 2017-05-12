@@ -28,6 +28,14 @@ class AngleEnum:
 	# class (static) attribute
 	(RADIANS, DEGREES) = range(2)
 
+## BUILDQUATERNION
+# Construct a quaternion from a rotation axis and a rotation angle around it
+#
+# @param vector The rotation axis
+# @param angle The rotation angle
+# @param convention The angle unit (radians or degrees)
+#
+# @return The normalized quaternion in the following convention --> [w, x, y, z]
 def buildQuaternion(vector, angle, convention):
 	# check the vector size
 	if len(vector) != 3:
@@ -57,6 +65,14 @@ def buildQuaternion(vector, angle, convention):
 
 	return res
 
+## ORIENTEDANGLE2D
+# Get the oriented angle from 3 2D-points
+#
+# @param center The center point of rotation
+# @param base The point which give the base vector (base - center)
+# @param goal The point which give the goal vector (goal - center)
+#
+# @return The oriented angle between the base vector and the goal vector
 def orientedAngle2D(center, base, goal):
 	# parameters consistence checking
 	if (len(center) != 2) or (len(base) != 2) or (len(goal) != 2):
@@ -112,6 +128,13 @@ def orientedAngle2D(center, base, goal):
 	# return the result
 	return angle
 
+## CONTAINS
+# Check if a point is inside a polygon (convex or not)
+#
+# @param point The point we consider
+# @param polygon The concerned polygon
+#
+# @return true if the point is inside the polygon, false otherwise
 def contains(point, polygon): # We assume the the polygon is sorted (each next index lead to the real next point)
 	# parameters consistence checking
 	if len(point) != 2:

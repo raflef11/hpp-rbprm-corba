@@ -154,14 +154,14 @@ def orientedAngle2D(center, base, goal):
 	# return the result
 	return angle
 
-## CONTAINS
+## ISINSIDE
 # Check if a point is inside a polygon (convex or not)
 #
 # @param point The point we consider
 # @param polygon The concerned polygon
 #
 # @return true if the point is inside the polygon, false otherwise
-def contains(point, polygon): # We assume the the polygon is sorted (each next index lead to the real next point)
+def isInside(point, polygon): # We assume the the polygon is sorted (each next index lead to the real next point)
 	# parameters consistence checking
 	if len(point) != 2:
 		raise MyEx(2)
@@ -178,9 +178,9 @@ def contains(point, polygon): # We assume the the polygon is sorted (each next i
 	sumAngles += orientedAngle2D(point, polygon[-1][:], polygon[0][:])
 	
 	if abs(sumAngles) < 0.0001: # if sumAngles == 0 --> point is outside polygon
-		return false
+		return False
 	elif abs(sumAngles - 2*math.pi) < 0.0001: # if sumAngles == 2*pi --> point is inside polygon
-		return true
+		return True
 	else: # impossible case
 		return "Impossible case"
 

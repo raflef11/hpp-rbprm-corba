@@ -8,7 +8,8 @@ class MyEx(Exception):
 					0 : "A 3D vector must contain exactly 3 elements",
 					1 : "Bad AngleEnum parameter",
 					2 : "A 2D vector must contain exactly 2 elements",
-					3 : "A plane must contain exactly 4 elements, [a, b, c, d] such as: ax + by + cz + d = 0"
+					3 : "A plane must contain exactly 4 elements, [a, b, c, d] such as: ax + by + cz + d = 0",
+					4 : "A 2D straight line must contain exactly 2 elements, [a, b] such as: y = ax + b"
 				 }
 
 	def __init__(self, val):
@@ -77,7 +78,7 @@ def buildQuaternion(vector, angle, convention):
 # @param [In] end1 The point which gives the first vector (end1 - center)
 # @param [In] end2 The point which gives the second vector (end2 - center)
 #
-# @return The angle between the two vectors
+# @return The angle in radian between the two vectors
 def angle2D(center, end1, end2):
 	# parameters consistence checking
 	if (len(center) != 2) or (len(end1) != 2) or (len(end2) != 2):
@@ -103,7 +104,7 @@ def angle2D(center, end1, end2):
 # @param [In] base The point which gives the base vector (base - center)
 # @param [In] goal The point which gives the goal vector (goal - center)
 #
-# @return The oriented angle between the base vector and the goal vector
+# @return The oriented angle in radian between the base vector and the goal vector
 def orientedAngle2D(center, base, goal):
 	# parameters consistence checking
 	if (len(center) != 2) or (len(base) != 2) or (len(goal) != 2):
@@ -189,7 +190,7 @@ def isInside(point, polygon): # We assume that the polygon is sorted (each next 
 		return "Impossible case"
 
 ## ORTHOGONALPROJECTION
-# Compute the orthogonal projection of a 3D-point on a given plane
+# Compute the orthogonal projection of a 3D point on a given plane
 #
 # @param [In] point The considered 3D-point
 # @param [In] plane The plane [a, b, c, d] on which we want to project the point
@@ -204,6 +205,33 @@ def orthogonalProjection(point, plane):
 
 	k = (plane[0]*point[0] + plane[1]*point[1] + plane[2]*point[2] + plane[3])/(math.pow(plane[0], 2) + math.pow(plane[1], 2) + math.pow(plane[2], 2))
 	return [(point[0] - k*plane[0]), (point[1] - k*plane[1]), (point[2] - k*plane[2])]
+
+## DISTANCETOSTRAIGHTLINE2D
+# Compute the minimum distance between a 2D point and a given straight line
+#
+# @param [In] point The considered 2D-point
+# @param [In] straightLine The considered straight line [a, b]
+#
+# @return The (minimal) distance between the specified point and straight line
+def distanceToStraightLine2D(point, straightLine):
+	# parameters consistence checking
+	if len(point) != 2:
+		raise MyEx(2)
+	if len(straightLine) != 2:
+		raise MyEx(4)
+
+	# get two points on the straight line (pa and pb)
+	pa = [0]; pb = [1]
+	pa.append(straightLine[1]); pb.append(sum(straightLine))
+
+	# get the angle theta between the two vectors formed by pa-point and pa-pb
+	v1 = [point[0] - pa[0], point[1] - pa[1]]
+	v2 = [pb[0] - pa[0], pb[1] - pa[1]]
+	theta = angle2D(pa, point, pb)
+
+	# get the distance using the sinus of theta and the distance between pa-point (the norm of v1)
+	n1 = math.sqrt(math.pow(v1[0], 2) + math.pow(v1[1], 2))
+	return (math.sin(theta) * n1)
 
 ## POINTCLOUDSMANAGER
 # Class to operate on point clouds, also used as a namespace

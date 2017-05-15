@@ -214,16 +214,45 @@ class PointCloudsManager:
 	# The parameters are not described because this function is private (but Python does not know this concept), you do not have to use this function anyway
 	#
 	# @param [In] basePoint ...
-	# @param [InOut] subset ...
-	# @param [In] angle (must be a InOut param but Python does not allow to pass a double by reference, so this parameter will be returned at the end of the function)
+	# @param [InOut] subset ... (will be copied, modified and returned, the reference will not be used)
+	# @param [InOut] angle (will be copied, modified and returned)
 	# @param [In] currentPoint ...
 	# @param [In] higher It equals True if currentPoint is above basePoint, False otherwise
 	# @param [In] direction If True, scan to the right. Otherwise, scan to the left
 	#
-	# @return angle (because Python cannot pass a double by reference)
+	# @return subset, angle (after modifications)
 	@staticmethod
 	def scanningProcess2D(basePoint, subset, angle, currentPoint, higher, direction):
-		pass
+		sset = subset[:]
+		higher_val = 1 if higher else -1
+		direction_val = 1 if direction else -1
+		if len(sset) == 1:
+			angle = angle2D(basePoint, [basePoint[0] + direction_val, basePoint[1]], currentPoint)
+			sset.append(currentPoint)
+		elif (higher_val*currentPoint[1]) >= (higher_val*sset[-1][1]):
+			opening = angle2D(sset[-1], [sset[-1][0] + direction_val, sset[-1][1]], currentPoint)
+			if opening <= angle:
+				sset.append(currentPoint)
+				angle = opening
+			else:
+				del sset[-1]
+				opening = angle2D(sset[-1], [sset[-1][0] + direction_val, sset[-1][1]], currentPoint)
+				convex = False
+				if len(sset) == 1:
+					convex = True
+				while not convex:
+					base = sset[-2]
+					angle = angle2D(base, [base[0] + direction_val, base[1]], sset[-1])
+					if angle < opening:
+						del sset[-1]
+						opening = angle2D(sset[-1], [sset[-1][0] + direction_val, sset[-1][1]], currentPoint)
+					else:
+						convex = True
+					if len(sset) == 1:
+						convex = True
+				sset.append(currentPoint)
+				angle = opening
+		return sset, angle
 
 	## CONVEXHULL2D (STATIC)
 	# Method to compute the 2D convex hull of a 2D point cloud
@@ -233,7 +262,56 @@ class PointCloudsManager:
 	# @return The convex hull of the specified 2D point cloud
 	@staticmethod
 	def convexHull2D(pointCloud2D):
-		pass
+		res = []
+		if len(pointCloud2D) != 0:
+			pc = pointCloud2D[:]
+			# sort the input set by x increasing
+			sortedSet = []
+			while len(pc) != 0:
+				index = 0
+				minx = pc[index][0]
+				for i in range(len(pc)):
+					if pc[i][0] < minx:
+						minx = pc[i][0]
+						index = i
+				sortedSet.append(pc[index])
+				del pc[index]
+
+			# first scanning, to the right
+			basePoint = sortedSet[0]
+			tr_up_set = [basePoint]; tr_down_set = [basePoint]
+			upAngle = 0.0; downAngle = 0.0
+
+			for i in range(1, len(sortedSet)):
+				if sortedSet[i][1] >= basePoint[1]: # if the point is higher than basePoint
+					tr_up_set, upAngle = PointCloudsManager.scanningProcess2D(basePoint, tr_up_set, upAngle, sortedSet[i], True, True)
+				else: # if the point is lower than basePoint
+					tr_down_set, downAngle = PointCloudsManager.scanningProcess2D(basePoint, tr_down_set, downAngle, sortedSet[i], False, True)
+
+			# second scanning, to the left
+			basePoint = sortedSet[-1]
+			tl_up_set = [basePoint]; tl_down_set = [basePoint]
+
+			for i in range(len(sortedSet)-2, -1, -1):
+				if sortedSet[i][1] >= basePoint[1]: # if the point is higher than basePoint
+					tl_up_set, upAngle = PointCloudsManager.scanningProcess2D(basePoint, tl_up_set, upAngle, sortedSet[i], True, False)
+				else: # if the point is lower than basePoint
+					tl_down_set, downAngle = PointCloudsManager.scanningProcess2D(basePoint, tl_down_set, downAngle, sortedSet[i], False, False)
+
+			# merge the four subset without keeping the duplicates (subsets boundaries, ...)
+			res_tmp = []
+			for p in tr_down_set:
+				res_tmp.append(p)
+			for i in range(len(tl_down_set)-2, -1, -1):
+				res_tmp.append(tl_down_set[i])
+			for i in range(1, len(tl_up_set)):
+				res_tmp.append(tl_up_set[i])
+			for i in range(len(tr_up_set)-2, 0, -1):
+				res_tmp.append(tr_up_set[i])
+			for p in res_tmp:
+				if not p in res:
+					res.append(p)
+		return res
 
 ## ISVALIDZMP
 # Compute the capture point criterion validation
@@ -266,3 +344,29 @@ a = 90 # rotation of 90 degrees
 quat = buildQuaternion(v, a, AngleEnum.DEGREES)
 print
 print "Quaternion : axis = " + str(v) + " , angle = " + str(a) + " --> " + str(quat)
+
+# convexHull example
+pointCloud = []
+pointCloud.append([3, 4])
+pointCloud.append([4, 5])
+pointCloud.append([4, 3.5])
+pointCloud.append([5, 5])
+pointCloud.append([5, 4])
+pointCloud.append([5, 2])
+pointCloud.append([6, 5.5])
+pointCloud.append([6, 3])
+pointCloud.append([6.5, 2])
+pointCloud.append([7, 5.5])
+pointCloud.append([7, 4])
+pointCloud.append([7, 1.5])
+pointCloud.append([8, 5.5])
+pointCloud.append([8, 3.5])
+pointCloud.append([8, 1])
+pointCloud.append([8, 0.5])
+pointCloud.append([8.5, 2.5])
+pointCloud.append([9, 4])
+pointCloud.append([10, 3])
+pointCloud.append([11, 3])
+
+cH = PointCloudsManager.convexHull2D(pointCloud)
+print cH

@@ -165,7 +165,7 @@ def orientedAngle2D(center, base, goal):
 # @param [In] polygon The concerned polygon
 #
 # @return True if the point is inside the polygon, False otherwise
-def isInside(point, polygon): # We assume the the polygon is sorted (each next index lead to the real next point)
+def isInside(point, polygon): # We assume that the polygon is sorted (each next index lead to the real next point)
 	# parameters consistence checking
 	if len(point) != 2:
 		raise MyEx(2)
@@ -324,7 +324,12 @@ class PointCloudsManager:
 #
 # @return True if the criterion is validated, False otherwise
 def isValidZMP(convexHull, comPos, comAccel, g = 9.80665):
-	pass
+	# determine the ZMP position
+	x_zmp = comPos[0] - (comPos[2]/g)*comAccel[0]
+	y_zmp = comPos[1] - (comPos[2]/g)*comAccel[1]
+
+	# return if the ZMP is inside the convex hull of the support polygon (equilibrium for planar contacts) or not (fall)
+	return isInside([x_zmp, y_zmp], convexHull)
 
 ## EVALZMP
 # Evaluate a contact configuration in accordance with the capture point criterion

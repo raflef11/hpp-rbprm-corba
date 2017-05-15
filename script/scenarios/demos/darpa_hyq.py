@@ -97,6 +97,7 @@ configs = []
 from hpp.gepetto import PathPlayer
 pp = PathPlayer (fullBody.client.basic, r)
 
+
 from hpp.corbaserver.rbprm.tools.cwc_trajectory_helper import step, clean,stats, saveAllData, play_traj
 
 	
@@ -114,6 +115,7 @@ def act(i, numOptim = 0, use_window = 0, friction = 0.5, optim_effectors = True,
 def play(frame_rate = 1./24.):
 	play_traj(fullBody,pp,frame_rate)
 	
+
 import time
 
 #DEMO METHODS
@@ -150,9 +152,9 @@ def genPlan(stepsize=0.06):
 	tp.r.client.gui.setVisibility("toto", "OFF")
 	tp.r.client.gui.setVisibility("hyq_trunk_large", "OFF")
 	global configs
-	start = time.clock()
+	start = time.clock() 
 	configs = fullBody.interpolate(stepsize, 5, 5, True)
-	end = time.clock()
+	end = time.clock() 
 	print "Contact plan generated in " + str(end-start) + "seconds"
 	
 def contactPlan(step = 0.5):
@@ -162,7 +164,7 @@ def contactPlan(step = 0.5):
 	tp.r.client.gui.setVisibility("hyq_trunk_large", "OFF")
 	for i in range(0,len(configs)):
 		r(configs[i]);
-		time.sleep(step)
+		time.sleep(step)		
 		
 		
 def a():
@@ -188,15 +190,4 @@ def e():
 print "Root path generated in " + str(tp.t) + " ms."
 
 #~ d();e()
-#d(0.0005);
-
-import sys
-print ""
-fullBody.addRequiredLimb("rhleg")
-fullBody.addRequiredLimb("rfleg")
-fullBody.addRequiredLimb("lhleg")
-fullBody.addRequiredLimb("lfleg")
-print "Required limbs :"
-sys.stdout.flush()
-fullBody.printRequiredLimbs()
 d(0.0005)

@@ -369,4 +369,6 @@ pointCloud.append([10, 3])
 pointCloud.append([11, 3])
 
 cH = PointCloudsManager.convexHull2D(pointCloud)
-print cH
+print ""
+print "Point cloud : " + str(pointCloud)
+print "Convex hull : " + str(cH)

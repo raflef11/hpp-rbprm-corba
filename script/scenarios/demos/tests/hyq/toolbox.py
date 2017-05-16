@@ -9,7 +9,8 @@ class MyEx(Exception):
 					1 : "Bad AngleEnum parameter",
 					2 : "A 2D vector (or point, ...) must contain exactly 2 elements",
 					3 : "A plane must contain exactly 4 elements, [a, b, c, d] such as: ax + by + cz + d = 0",
-					4 : "A 2D straight line must contain exactly 2 elements, [a, b] such as: y = ax + b"
+					4 : "A 2D straight line must contain exactly 2 elements, [a, b] such as: y = ax + b",
+					5 : "Impossible to compare two vectors with different sizes"
 				 }
 
 	def __init__(self, val):
@@ -207,9 +208,9 @@ def orthogonalProjection(point, plane):
 	return [(point[0] - k*plane[0]), (point[1] - k*plane[1]), (point[2] - k*plane[2])]
 
 ## DISTANCETOSTRAIGHTLINE2D
-# Compute the minimum distance between a 2D point and a given straight line
+# Compute the minimum distance between a 2D point and a given 2D straight line
 #
-# @param [In] point The considered 2D-point
+# @param [In] point The considered 2D point
 # @param [In] straightLine The considered straight line [a, b]
 #
 # @return The (minimal) distance between the specified point and straight line
@@ -234,7 +235,7 @@ def distanceToStraightLine2D(point, straightLine):
 	return (math.sin(theta) * n1)
 
 ## STRAIGHTLINEFROMPOINTS2D
-# Compute the straight line equation from two points of the straight line
+# Compute the 2D straight line equation from two 2D points of the straight line
 #
 # @param [In] p1 A point belonging to the straight line sought
 # @param [In] p2 Another point belonging to the same straight line
@@ -252,6 +253,88 @@ def straightLineFromPoints2D(p1, p2):
 	b = p1[1] - a*p1[0]
 
 	return [a, b]
+
+## EUCLIDEANDIST
+# Compute the eucliean distance between two vectors
+#
+# @param [In] v1 The first vector
+# @param [In] v2 The second vector
+#
+# @return The euclidean distance between v1 and v2
+def euclideanDist(v1, v2):
+	# parameters consistence checking
+	if len(v1) != len(v2):
+		raise MyEx(5)
+
+	sumOfSquare = 0
+	for i in range(len(v1)):
+		sumOfSquare += math.pow(v1[i] - v2[i], 2)
+	return math.sqrt(sumOfSquare)
+
+## WEIGHTEDCENTROIDCONVEX2D
+# Compute the weighted centroid of a convex polygon
+#
+# @param [In] convexPolygon
+#
+# @return The weighted centroid (real center approximation) of the polygon
+def weightedCentroidConvex2D(convexPolygon):
+	# parameters consistence checking
+	for p in convexPolygon:
+		if len(p) != 2:
+			raise MyEx(2)
+
+	res = []
+	if len(convexPolygon) == 1:
+		res = convexPolygon[0]
+	elif len(convexPolygon) == 2:
+		res.append((convexPolygon[0][0] + convexPolygon[1][0])/2)
+		res.append((convexPolygon[0][1] + convexPolygon[1][1])/2)
+	else:
+		# get the longest edge and define the minimum admissible threshold for counting a vertex as a single point
+		maxDist = euclideanDist(convexPolygon[-1], convexPolygon[0])
+		for i in range(len(convexPolygon)-1):
+			dist = euclideanDist(convexPolygon[i], convexPolygon[i+1])
+			if dist > maxDist:
+				maxDist = dist
+		threshold = maxDist*1.0/10
+
+		# shift the list until starting from a lonely (to the rear) point
+		shifted = convexPolygon[:]
+		while (euclideanDist(shifted[-1], shifted[0]) <= threshold):
+			shifted.append(shifted.pop(0))
+
+		# look over the shifted set
+		finalSet = []
+		localSubset = []
+		subsetOngoing = False
+		shifted.append(shifted[0])
+		for i in range(len(shifted)-1):
+			if euclideanDist(shifted[i], shifted[i+1]) > threshold:
+				if not subsetOngoing:
+					finalSet.append(shifted[i])
+				else:
+					localSubset.append(shifted[i])
+					moyX = 0; moyY = 0
+					for p in localSubset:
+						moyX += p[0]
+						moyY += p[1]
+					moyX /= (len(localSubset)*1.0)
+					moyY /= (len(localSubset)*1.0)
+					finalSet.append([moyX, moyY])
+					del localSubset[:]
+					subsetOngoing = False
+			else:
+				localSubset.append(shifted[i])
+				if not subsetOngoing:
+					subsetOngoing = True
+		resX = 0; resY = 0
+		for p in finalSet:
+			resX += p[0]
+			resY += p[1]
+		resX /= (len(finalSet)*1.0)
+		resY /= (len(finalSet)*1.0)
+		res.append(resX); res.append(resY)
+	return res
 
 ## POINTCLOUDSMANAGER
 # Class to operate on point clouds, also used as a namespace
@@ -360,6 +443,17 @@ class PointCloudsManager:
 				if not p in res:
 					res.append(p)
 		return res
+
+	## WEIGHTEDCENTROID2D
+	# Compute the weighted centroid of a point cloud
+	#
+	# @param [In] pointCloud2D The considered 2D point cloud
+	#
+	# @return The weighted centroid (real center approximation) of the point cloud
+	@staticmethod
+	def weightedCentroid2D(pointCloud2D):
+		cH = PointCloudsManager.convexHull2D(pointCloud2D)
+		return weightedCentroidConvex2D(cH)
 
 ## ISVALIDZMP
 # Compute the capture point criterion validation

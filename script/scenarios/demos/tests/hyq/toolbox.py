@@ -519,3 +519,20 @@ cH = PointCloudsManager.convexHull2D(pointCloud)
 print ""
 print "Point cloud : " + str(pointCloud)
 print "Convex hull : " + str(cH)
+
+# weightedCentroid example
+poly = [[0, 0], [0.5, 0], [100, 0], [100, 100], [0, 100], [0, 0.5]]
+realCenter = [50, 50]
+medX = 0; medY = 0
+for p in poly:
+	medX += p[0]
+	medY += p[1]
+medX /= (len(poly)*1.0)
+medY /= (len(poly)*1.0)
+centroid = [medX, medY]
+wcentroid = weightedCentroidConvex2D(poly)
+print ""
+print "Polygon : " + str(poly)
+print "Centroid : " + str(centroid)
+print "Weighted centroid : " + str(wcentroid)
+print "Real center : " + str(realCenter)

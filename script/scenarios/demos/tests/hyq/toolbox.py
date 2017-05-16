@@ -5,9 +5,9 @@ import math
 class MyEx(Exception):
 	# class (static) attribute
 	myex_table = {
-					0 : "A 3D vector must contain exactly 3 elements",
+					0 : "A 3D vector (or point, ...) must contain exactly 3 elements",
 					1 : "Bad AngleEnum parameter",
-					2 : "A 2D vector must contain exactly 2 elements",
+					2 : "A 2D vector (or point, ...) must contain exactly 2 elements",
 					3 : "A plane must contain exactly 4 elements, [a, b, c, d] such as: ax + by + cz + d = 0",
 					4 : "A 2D straight line must contain exactly 2 elements, [a, b] such as: y = ax + b"
 				 }
@@ -232,6 +232,26 @@ def distanceToStraightLine2D(point, straightLine):
 	# get the distance using the sinus of theta and the distance between pa-point (the norm of v1)
 	n1 = math.sqrt(math.pow(v1[0], 2) + math.pow(v1[1], 2))
 	return (math.sin(theta) * n1)
+
+## STRAIGHTLINEFROMPOINTS2D
+# Compute the straight line equation from two points of the straight line
+#
+# @param [In] p1 A point belonging to the straight line sought
+# @param [In] p2 Another point belonging to the same straight line
+#
+# @return The straight line equation [a, b]
+def straightLineFromPoints2D(p1, p2):
+	# parameters consistence checking
+	if (len(p1) != 2) or (len(p2) != 2):
+		raise MyEx(2)
+
+	# get the slope
+	a = (p2[1] - p1[1])*1.0/(p2[0] - p1[0])
+
+	# get the intercept
+	b = p1[1] - a*p1[0]
+
+	return [a, b]
 
 ## POINTCLOUDSMANAGER
 # Class to operate on point clouds, also used as a namespace

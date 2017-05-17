@@ -90,3 +90,10 @@ def setQ(r, q, i, val) :
 	q_tmp[i] = val
 	r(q_tmp)
 	return q_tmp
+
+# method modifying all configuration parameters sequentially (test)
+def testQ(step = 2.0):
+	for i in range(len(q_init)):
+		print "i == " + str(i)
+		setQ(r, q_init, i, step)
+		raw_input()

@@ -274,7 +274,7 @@ def euclideanDist(v1, v2):
 ## WEIGHTEDCENTROIDCONVEX2D
 # Compute the weighted centroid of a convex polygon
 #
-# @param [In] convexPolygon
+# @param [In] convexPolygon The considered convex polygon (we assume that it is in the order)
 #
 # @return The weighted centroid (real center approximation) of the polygon
 def weightedCentroidConvex2D(convexPolygon):
@@ -483,7 +483,16 @@ def isValidZMP(convexHull, comPos, comAccel, g = 9.80665):
 #
 # @return The cost of the current contact configuration
 def evalZMP(convexHull, comPos, comAccel, g = 9.80665):
-	pass
+	# determine the ZMP position
+	x_zmp = comPos[0] - (comPos[2]/g)*comAccel[0]
+	y_zmp = comPos[1] - (comPos[2]/g)*comAccel[1]
+	zmp = [x_zmp, y_zmp]
+
+	# get the center (approximation of the real center) of the convex hull of the support polygon (CHSP)
+	wcentroid = weightedCentroidConvex2D(convexHull)
+
+	# return the distance to the center of the CHSP (to minimize)
+	return euclideanDist(zmp, wcentroid)
 
 # buildQuaternion example
 v = [0, 0, 1] # Rotation around z-axiz

@@ -455,17 +455,30 @@ class PointCloudsManager:
 		cH = PointCloudsManager.convexHull2D(pointCloud2D)
 		return weightedCentroidConvex2D(cH)
 
+## FINDZMP
+# Compute the Zero-Moment-Point position
+#
+# @param [In] comPos The 3D position of the center of mass of the robot
+# @param [In] comAccel The center of mass acceleration
+# @param [In] g The gravity acceleration, default value: -9.80665 m.s-1
+#
+# @ return the ZMP position (2D)
+def findZMP(comPos, comAccel, g = -9.80665):
+	x_zmp = comPos[0] - (comPos[2]/g)*comAccel[0]
+	y_zmp = comPos[1] - (comPos[2]/g)*comAccel[1]
+	return [x_zmp, y_zmp]
+
 ## ISVALIDZMP
 # Compute the capture point criterion validation
 # The goal is to extend the capture point criterion (using the Zero-Moment-Point) to a 3D case (non coplanar contacts)
 #
-# @param [In] convexHull The convex hull of the support polygon
-# @param [In] comPos The position of the center of mass of the robot
+# @param [In] convexHull The convex hull of the support polygon (2D)
+# @param [In] comPos The position of the center of mass of the robot (3D)
 # @param [In] comAccel The center of mass acceleration
-# @param [In] g The gravity acceleration, default value: 9.80665 m.s-1
+# @param [In] g The gravity acceleration, default value: -9.80665 m.s-1
 #
 # @return True if the criterion is validated, False otherwise
-def isValidZMP(convexHull, comPos, comAccel, g = 9.80665):
+def isValidZMP(convexHull, comPos, comAccel, g = -9.80665):
 	# determine the ZMP position
 	x_zmp = comPos[0] - (comPos[2]/g)*comAccel[0]
 	y_zmp = comPos[1] - (comPos[2]/g)*comAccel[1]
@@ -476,13 +489,13 @@ def isValidZMP(convexHull, comPos, comAccel, g = 9.80665):
 ## EVALZMP
 # Evaluate a contact configuration in accordance with the capture point criterion
 #
-# @param [In] convexHull The convex hull of the support polygon
-# @param [In] comPos The position of the center of mass of the robot
+# @param [In] convexHull The convex hull of the support polygon (2D)
+# @param [In] comPos The position of the center of mass of the robot (3D)
 # @param [In] comAccel The center of mass acceleration
-# @param [In] g The gravity acceleration, default value: 9.80665 m.s-1
+# @param [In] g The gravity acceleration, default value: -9.80665 m.s-1
 #
 # @return The cost of the current contact configuration
-def evalZMP(convexHull, comPos, comAccel, g = 9.80665):
+def evalZMP(convexHull, comPos, comAccel, g = -9.80665):
 	# determine the ZMP position
 	x_zmp = comPos[0] - (comPos[2]/g)*comAccel[0]
 	y_zmp = comPos[1] - (comPos[2]/g)*comAccel[1]

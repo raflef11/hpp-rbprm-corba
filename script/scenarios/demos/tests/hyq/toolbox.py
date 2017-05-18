@@ -1,4 +1,5 @@
 import math
+from copy import deepcopy
 
 ## MYEX (INHERITS EXCEPTION)
 # Class derived from Exception class, used to implement the specific exceptions of the toolbox
@@ -10,7 +11,11 @@ class MyEx(Exception):
 					2 : "A 2D vector (or point, ...) must contain exactly 2 elements",
 					3 : "A plane must contain exactly 4 elements, [a, b, c, d] such as: ax + by + cz + d = 0",
 					4 : "A 2D straight line must contain exactly 2 elements, [a, b] such as: y = ax + b",
-					5 : "Impossible to compare two vectors with different sizes"
+					5 : "Impossible to compare two vectors with different sizes",
+					6 : "A homogeneous matrix must have the size (4, 4)",
+					7 : "Matrix size not consistent (not rectangular)",
+					8 : "Impossible to multiply an empty matrix with a not empty matrix",
+					9 : "The number of columns (row size) of the first matrix must be equal to the number of rows (column size) of the second matrix in order to multiply them"
 				 }
 
 	def __init__(self, val):
@@ -299,7 +304,7 @@ def weightedCentroidConvex2D(convexPolygon):
 		threshold = maxDist*1.0/10
 
 		# shift the list until starting from a lonely (to the rear) point
-		shifted = convexPolygon[:]
+		shifted = deepcopy(convexPolygon)
 		while (euclideanDist(shifted[-1], shifted[0]) <= threshold):
 			shifted.append(shifted.pop(0))
 
@@ -336,6 +341,120 @@ def weightedCentroidConvex2D(convexPolygon):
 		res.append(resX); res.append(resY)
 	return res
 
+## MULTIPLYMATRICES
+# Multiply two matrices
+#
+# @param [In] mat1
+# @param [In] mat2
+#
+# @return mat1 * mat2
+def multiplyMatrices(mat1, mat2):
+	if (len(mat1) == 0) and (len(mat2) == 0):
+		return []
+	elif (len(mat1) == 0) or (len(mat2) == 0):
+		raise MyEx(8)
+	else:
+		# parameters consistence checking
+		colSize = len(mat1[0])
+		for row in mat1:
+			if len(row) != colSize:
+				raise MyEx(7)
+		colSize = len(mat2[0])
+		for row in mat2:
+			if len(row) != colSize:
+				raise MyEx(7)
+		if len(mat1[0]) != len(mat2):
+			raise MyEx(9)
+
+		res = []
+		for row1 in range(len(mat1)):
+			line = []
+			for col2 in range(len(mat2[0])):
+				sumEl = 0
+				for common in range(len(mat2)):
+					sumEl += (mat1[row1][common] * mat2[common][col2])
+				line.append(sumEl)
+			res.append(line[:])
+		return res
+
+
+## TRANSPOSEMATRIX
+# Transpose a given matrix
+#
+# @param [In] mat (mat[row][col])
+#
+# @return The transpose of mat
+def transposeMatrix(mat):
+	res = []
+	if len(mat) != 0:
+		# parameters consistence checking
+		colSize = len(mat[0])
+		for row in mat:
+			if len(row) != colSize:
+				raise MyEx(7)
+
+		for col in range(colSize):
+			line = []
+			for row in range(len(mat)):
+				line.append(mat[row][col])
+			res.append(line[:])
+
+	return res
+
+## NEGATEMATRIX
+# Negate a given matrix (multiply all elements by -1)
+#
+# @param [In] mat The matrix to negate
+#
+# @return The negate matrix
+def negateMatrix(mat):
+	res = []
+	if len(mat) != 0:
+		res = deepcopy(mat)
+		# parameters consistence checking
+		colSize = len(mat[0])
+		for row in mat:
+			if len(row) != colSize:
+				raise MyEx(7)
+
+		for row in range(len(mat)):
+			for col in range(colSize):
+				res[row][col] = -mat[row][col]
+	return res
+
+## INVERSEHOMOGENEOUSMATRIX
+# Compute the inverse of a homogeneous matrix as follows:
+# T = /R P\ ==> T_inv = /R_t -R_t*P\
+#     \0 1/             \ 0     1  /
+#
+# @param [In] HMatrix homogeneous matrix --> (HMatrix[row][col])
+#
+# @return The inverse of HMatrix
+def inverseHomogeneousMatrix(HMatrix):
+	# parameters consistence checking
+	if len(HMatrix) != 4:
+		raise MyEx(6)
+	for row in HMatrix:
+		if len(row) != 4:
+			raise MyEx(6)
+
+	R = []
+	P = []
+	for i in range(3):
+		R.append(HMatrix[i][0:3])
+		P.append([HMatrix[i][3]])
+	R_t = transposeMatrix(R)
+	mR_t_P = negateMatrix(multiplyMatrices(R_t, P))
+
+	res = deepcopy(HMatrix)
+	for i in range(3):
+		res[i][3] = mR_t_P[i][0]
+		res[3][i] = 0
+		for j in range(3):
+			res[i][j] = R_t[i][j]
+	res[3][3] = 1
+	return res
+
 ## POINTCLOUDSMANAGER
 # Class to operate on point clouds, also used as a namespace
 class PointCloudsManager:
@@ -354,7 +473,7 @@ class PointCloudsManager:
 	# @return subset, angle (after modifications)
 	@staticmethod
 	def scanningProcess2D(basePoint, subset, angle, currentPoint, higher, direction):
-		sset = subset[:]
+		sset = deepcopy(subset)
 		higher_val = 1 if higher else -1
 		direction_val = 1 if direction else -1
 		if len(sset) == 1:
@@ -395,7 +514,7 @@ class PointCloudsManager:
 	def convexHull2D(pointCloud2D):
 		res = []
 		if len(pointCloud2D) != 0:
-			pc = pointCloud2D[:]
+			pc = deepcopy(pointCloud2D)
 			# sort the input set by x increasing
 			sortedSet = []
 			while len(pc) != 0:

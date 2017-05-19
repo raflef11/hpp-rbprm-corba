@@ -83,21 +83,7 @@ q_init = hyq_ref[:]
 #fullbody.setStartState(q_init, [rLegId, lLegId, rArmId, lArmId])
 r(q_init)
 
-# set fullbody configuration method from a base config and only one modification (tests)
-def setQ(r, q, i, val) :
-	q_tmp = q[:]
-	i = i%len(q)
-	q_tmp[i] = val
-	r(q_tmp)
-	return q_tmp
-
-# method modifying all configuration parameters sequentially (test)
-def testQ(step = 2.0):
-	for i in range(len(q_init)):
-		print "i == " + str(i)
-		setQ(r, q_init, i, step)
-		raw_input()
-
+# MGD of Hyq
 def HyqMGD(haaPos, q0, q1, q2): # Currently not validated
 	base = []
 	for v in haaPos:
@@ -144,7 +130,15 @@ def HyqMGD(haaPos, q0, q1, q2): # Currently not validated
 	T03 = tools.multiplyMatrices(tools.multiplyMatrices(T01, T12), T23)
 	T30 = tools.inverseHomogeneousMatrix(T03)
 
-	return tools.multiplyMatrices(T30, base)
+	return tools.multiplyMatrices(T30, base) # the end-effector (foot) position
+
+# MGI of Hyq
+def HyqMGI(haaPos, footPos):
+	pass
+
+# set a end-effector position
+def setEndEffectorPosition(name, pos):
+	pass
 
 # Test MGD Hyq
 haaPos = fullbody.getJointPosition("lh_haa_joint")[0:3]

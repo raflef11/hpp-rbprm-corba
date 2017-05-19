@@ -83,7 +83,7 @@ q_init = hyq_ref[:]
 #fullbody.setStartState(q_init, [rLegId, lLegId, rArmId, lArmId])
 r(q_init)
 
-# MGD of Hyq
+# MGD of Hyq (based on lh)
 def HyqMGD(haaPos, q0, q1, q2): # Currently not validated
 	base = []
 	for v in haaPos:

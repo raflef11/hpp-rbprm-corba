@@ -83,14 +83,22 @@ q_init = hyq_ref[:]
 #fullbody.setStartState(q_init, [rLegId, lLegId, rArmId, lArmId])
 r(q_init)
 
-# MGD of Hyq (based on lh)
-def HyqMGD(haaPos, q0, q1, q2): # Currently not validated
+# MGD of Hyq
+def HyqMGD(prefix, q0, q1, q2): # Currently not validated
+	prefixes = ["lh", "rh", "lf", "rf"]
+	if prefix not in prefixes:
+		return "Unknown prefix"
+
+	haaPos = fullbody.getJointPosition(prefix + "_haa_joint")[0:3]
 	base = []
 	for v in haaPos:
 		base.append([v])
 	base.append([1])
 
-	c0 = tools.math.cos(-q0); s0 = tools.math.sin(-q0) # -q0 because the model uses a q0 in the opposite direction
+	if (prefix == prefixes[0]) or (prefix == prefixes[2]):
+		c0 = tools.math.cos(-q0); s0 = tools.math.sin(-q0)
+	else:
+		c0 = tools.math.cos(q0); s0 = tools.math.sin(q0)
 	c1 = tools.math.cos(q1); s1 = tools.math.sin(q1)
 	c2 = tools.math.cos(q2); s2 = tools.math.sin(q2)
 	l1 = 0.082; l2 = 0.35; l3 = 0.35
@@ -150,8 +158,8 @@ def setEndEffectorPosition(name, pos):
 		r(q)
 
 # Test MGD Hyq
-haaPos = fullbody.getJointPosition("lh_haa_joint")[0:3]
-footPos = fullbody.getJointPosition("lh_foot_joint")[0:3]
+prefix = "lh"
+footPos = fullbody.getJointPosition(prefix + "_foot_joint")[0:3]
 qlh = fullbody.getCurrentConfig()[7:10]
-print "MGD : " + str(HyqMGD(haaPos, qlh[0], qlh[1], qlh[2]))
+print "MGD : " + str(HyqMGD(prefix, qlh[0], qlh[1], qlh[2]))
 print "foot : " + str(footPos)

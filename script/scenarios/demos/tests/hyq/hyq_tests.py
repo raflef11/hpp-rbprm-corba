@@ -97,3 +97,58 @@ def testQ(step = 2.0):
 		print "i == " + str(i)
 		setQ(r, q_init, i, step)
 		raw_input()
+
+def HyqMGD(haaPos, q0, q1, q2): # Currently not validated
+	base = []
+	for v in haaPos:
+		base.append([v])
+	base.append([1])
+
+	c0 = tools.math.cos(-q0); s0 = tools.math.sin(-q0) # -q0 because the model uses a q0 in the opposite direction
+	c1 = tools.math.cos(q1); s1 = tools.math.sin(q1)
+	c2 = tools.math.cos(q2); s2 = tools.math.sin(q2)
+	l1 = 0.082; l2 = 0.35; l3 = 0.35
+	
+	'''
+	T01 = [[1, 0,  0,   0],
+		   [0, c0, -s0, 0],
+		   [0, s0, c0, -l1],
+		   [0, 0,  0,   1]]
+
+	T12 = [[c1,  0, s1, l2],
+		   [0,   1, 0,  0],
+		   [-s1, 0, c1, 0],
+		   [0,   0, 0,  1]]
+
+	T23 = [[c2,  0, s2, 0],
+		   [0,   1, 0,  0],
+		   [-s2, 0, c2, l3],
+		   [0,   0, 0,  1]]
+	'''
+
+	T01 = [[1, 0,  0,   0],
+		   [0, c0, -s0, l1*s0],
+		   [0, s0, c0,  -l1*c0],
+		   [0, 0,  0,   1]]
+
+	T12 = [[c1,  0, s1, -l2*s1],
+		   [0,   1, 0,  0],
+		   [-s1, 0, c1, -l2*c1],
+		   [0,   0, 0,  1]]
+
+	T23 = [[c2,  0, s2, l3*c2],
+		   [0,   1, 0,  0],
+		   [-s2, 0, c2, -l3*s2],
+		   [0,   0, 0,  1]]
+
+	T03 = tools.multiplyMatrices(tools.multiplyMatrices(T01, T12), T23)
+	T30 = tools.inverseHomogeneousMatrix(T03)
+
+	return tools.multiplyMatrices(T30, base)
+
+# Test MGD Hyq
+haaPos = fullbody.getJointPosition("lh_haa_joint")[0:3]
+footPos = fullbody.getJointPosition("lh_foot_joint")[0:3]
+qlh = fullbody.getCurrentConfig()[7:10]
+print "MGD : " + str(HyqMGD(haaPos, qlh[0], qlh[1], qlh[2]))
+print "foot : " + str(footPos)

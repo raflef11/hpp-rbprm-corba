@@ -138,7 +138,16 @@ def HyqMGI(haaPos, footPos):
 
 # set a end-effector position
 def setEndEffectorPosition(name, pos):
-	pass
+	baseJoints = {7: "lh_haa_joint", 10: "rh_haa_joint", 13: "lf_haa_joint", 16: "rf_haa_joint"}
+	endJoints = {"lh_foot_joint": 7, "rh_foot_joint": 10, "lf_foot_joint": 13, "rf_foot_joint": 16}
+	if name in endJoints.keys():
+		q = fullbody.getCurrentConfig()
+		index = endJoints[name]
+		footPos = pos
+		haaPos = fullBody.getJointPosition(baseJoints[index])[0:3]
+		qend = HyqMGI(haaPos, footPos)
+		q[index:index+3] = qend[:]
+		r(q)
 
 # Test MGD Hyq
 haaPos = fullbody.getJointPosition("lh_haa_joint")[0:3]

@@ -141,13 +141,17 @@ def setEndEffectorPosition(name, pos):
 	pass
 
 # Test MGD Hyq
-def testMGDlh():
-	Xreal = fullbody.getJointPosition("lh_foot_joint")[0:3]
-	print "lh_foot_joint position from model : " + str(Xreal)
-	[q1, q2, q3] = fullbody.getCurrentConfig()[7:10]
-	Xot, _ = HyqMGD("lh", q1, q2, q3)
+def testMGD(prefix):
+	prefixes = {"lh" : 7, "lf" : 10, "rh" : 13, "rf" : 16}
+	if prefix not in prefixes.keys():
+		return "Not a valid prefix"
+	Xreal = fullbody.getJointPosition(prefix + "_foot_joint")[0:3]
+	print prefix + "_foot_joint position from model : " + str(Xreal)
+	k = prefixes[prefix]
+	[q1, q2, q3] = fullbody.getCurrentConfig()[k:k+3]
+	Xot, _ = HyqMGD(prefix, q1, q2, q3)
 	X = [Xot[0][0], Xot[1][0], Xot[2][0]]
-	print "lh_foot_joint position from MGD : " + str(X)
+	print prefix + "_foot_joint position from MGD : " + str(X)
 	print "errorX : " + str(abs(X[0] - Xreal[0]))
 	print "errorY : " + str(abs(X[1] - Xreal[1]))
 	print "errorZ : " + str(abs(X[2] - Xreal[2]))

@@ -83,83 +83,66 @@ q_init = hyq_ref[:]
 #fullbody.setStartState(q_init, [rLegId, lLegId, rArmId, lArmId])
 r(q_init)
 
-# MGD of Hyq
-def HyqMGD(prefix, q0, q1, q2): # Currently not validated
-	prefixes = ["lh", "rh", "lf", "rf"]
+# HYQMGD (Currently not validated)
+# Compute the MGD of the Hyq
+#
+# @param [In] prefix The prefix of the considered joint in order to identify it
+# @param [In] q1 The haa configuration
+# @param [In] q2 The hfe configuration
+# @param [In] q3 The kfe configuration
+#
+# @return The position of the foot knwowing the configuration of its limb; The transform matrix between world frame and the last joint (kfe)
+def HyqMGD(prefix, q1, q2, q3):
+	prefixes = ["lh", "lf", "rh", "rf"]
 	if prefix not in prefixes:
 		return "Unknown prefix"
 
-	haaPos = fullbody.getJointPosition(prefix + "_haa_joint")[0:3]
-	base = []
-	for v in haaPos:
-		base.append([v])
-	base.append([1])
+	# get the transform between the world frame (model) and the hyq concerned limb (model). The position values are used in the world frame.
+	# and
+	# get the transform between the hyq concerned limb (model) and the base coordinate system used for the MGD
+	Tworldframe_limb = []
+	Tlimb_0 = []
+	pos = fullbody.getJointPosition(prefix + "_haa_joint")[0:3]
+	if (prefix == prefixes[0]) or (prefix == prefixes[1]): # one of the limbs on the left
+		Tlimb_0 = [[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]
+		Tworldframe_limb = [[-1, 0, 0, pos[0]], [0, 1, 0, pos[1]], [0, 0, -1, pos[2]], [0, 0, 0, 1]]
+	else: # one of the limbs on the right
+		Tlimb_0 = [[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+		Tworldframe_limb = [[1, 0, 0, pos[0]], [0, 1, 0, pos[1]], [0, 0, 1, pos[2]], [0, 0, 0, 1]]
 
-	if (prefix == prefixes[0]) or (prefix == prefixes[2]):
-		c0 = tools.math.cos(-q0); s0 = tools.math.sin(-q0)
-	else:
-		c0 = tools.math.cos(q0); s0 = tools.math.sin(q0)
+	# compute the MGD
 	c1 = tools.math.cos(q1); s1 = tools.math.sin(q1)
 	c2 = tools.math.cos(q2); s2 = tools.math.sin(q2)
-	l1 = 0.082; l2 = 0.35; l3 = 0.35
-	
-	'''
-	T01 = [[1, 0,  0,   0],
-		   [0, c0, -s0, 0],
-		   [0, s0, c0, -l1],
-		   [0, 0,  0,   1]]
+	c3 = tools.math.cos(q3); s3 = tools.math.sin(q3)
+	#l1 = 0.082; l2 = 0.35; l3 = 0.35
+	l1 = tools.euclideanDist(fullbody.getJointPosition(prefix + "_haa_joint")[0:3], fullbody.getJointPosition(prefix + "_hfe_joint")[0:3])
+	l2 = tools.euclideanDist(fullbody.getJointPosition(prefix + "_hfe_joint")[0:3], fullbody.getJointPosition(prefix + "_kfe_joint")[0:3])
+	l3 = tools.euclideanDist(fullbody.getJointPosition(prefix + "_kfe_joint")[0:3], fullbody.getJointPosition(prefix + "_foot_joint")[0:3])
 
-	T12 = [[c1,  0, s1, l2],
-		   [0,   1, 0,  0],
-		   [-s1, 0, c1, 0],
-		   [0,   0, 0,  1]]
-
-	T23 = [[c2,  0, s2, 0],
-		   [0,   1, 0,  0],
-		   [-s2, 0, c2, l3],
-		   [0,   0, 0,  1]]
-	'''
-
-	T01 = [[1, 0,  0,   0],
-		   [0, c0, -s0, l1*s0],
-		   [0, s0, c0,  -l1*c0],
-		   [0, 0,  0,   1]]
-
-	T12 = [[c1,  0, s1, -l2*s1],
-		   [0,   1, 0,  0],
-		   [-s1, 0, c1, -l2*c1],
-		   [0,   0, 0,  1]]
-
-	T23 = [[c2,  0, s2, l3*c2],
-		   [0,   1, 0,  0],
-		   [-s2, 0, c2, -l3*s2],
-		   [0,   0, 0,  1]]
+	T01 = [[c1, -s1, 0, 0], [0, 0, -1, 0], [s1, c1, 0, 0], [0, 0, 0, 1]]
+	T12 = [[c2, -s2, 0, l1], [0, 0, 1, 0], [-s2, -c2, 0, 0], [0, 0, 0, 1]]
+	T23 = [[c3, -s3, 0, l2], [s3, c3, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
 
 	T03 = tools.multiplyMatrices(tools.multiplyMatrices(T01, T12), T23)
-	T30 = tools.inverseHomogeneousMatrix(T03)
 
-	return tools.multiplyMatrices(T30, base) # the end-effector (foot) position
+	# position of the OT
+	X3 = [[l3], [0], [0], [1]]
+	X0 = tools.multiplyMatrices(T03, X3) # X0 = T03 * X3
+
+	# Xworldframe = Tworldframe_limb * Tlimb_0 * X0
+	return tools.multiplyMatrices(Tworldframe_limb, tools.multiplyMatrices(Tlimb_0, X0)), tools.multiplyMatrices(tools.multiplyMatrices(Tworldframe_limb, Tlimb_0), T03)
 
 # MGI of Hyq
-def HyqMGI(haaPos, footPos):
+def HyqMGI(prefix, footPos):
 	pass
 
 # set a end-effector position
 def setEndEffectorPosition(name, pos):
-	baseJoints = {7: "lh_haa_joint", 10: "rh_haa_joint", 13: "lf_haa_joint", 16: "rf_haa_joint"}
-	endJoints = {"lh_foot_joint": 7, "rh_foot_joint": 10, "lf_foot_joint": 13, "rf_foot_joint": 16}
-	if name in endJoints.keys():
-		q = fullbody.getCurrentConfig()
-		index = endJoints[name]
-		footPos = pos
-		haaPos = fullBody.getJointPosition(baseJoints[index])[0:3]
-		qend = HyqMGI(haaPos, footPos)
-		q[index:index+3] = qend[:]
-		r(q)
+	pass
 
 # Test MGD Hyq
-prefix = "lh"
-footPos = fullbody.getJointPosition(prefix + "_foot_joint")[0:3]
-qlh = fullbody.getCurrentConfig()[7:10]
-print "MGD : " + str(HyqMGD(prefix, qlh[0], qlh[1], qlh[2]))
-print "foot : " + str(footPos)
+print "lh_foot_joint position from model : " + str(fullbody.getJointPosition("lh_foot_joint")[0:3])
+[q1, q2, q3] = fullbody.getCurrentConfig()[7:10]
+Xot, _ = HyqMGD("lh", q1, q2, q3)
+X = [Xot[0][0], Xot[1][0], Xot[2][0]]
+print "lh_foot_joint position from MGD : " + str(X)

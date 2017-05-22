@@ -141,8 +141,14 @@ def setEndEffectorPosition(name, pos):
 	pass
 
 # Test MGD Hyq
-print "lh_foot_joint position from model : " + str(fullbody.getJointPosition("lh_foot_joint")[0:3])
-[q1, q2, q3] = fullbody.getCurrentConfig()[7:10]
-Xot, _ = HyqMGD("lh", q1, q2, q3)
-X = [Xot[0][0], Xot[1][0], Xot[2][0]]
-print "lh_foot_joint position from MGD : " + str(X)
+def testMGDlh():
+	Xreal = fullbody.getJointPosition("lh_foot_joint")[0:3]
+	print "lh_foot_joint position from model : " + str(Xreal)
+	[q1, q2, q3] = fullbody.getCurrentConfig()[7:10]
+	Xot, _ = HyqMGD("lh", q1, q2, q3)
+	X = [Xot[0][0], Xot[1][0], Xot[2][0]]
+	print "lh_foot_joint position from MGD : " + str(X)
+	print "errorX : " + str(abs(X[0] - Xreal[0]))
+	print "errorY : " + str(abs(X[1] - Xreal[1]))
+	print "errorZ : " + str(abs(X[2] - Xreal[2]))
+	print "errorDist : " + str(tools.euclideanDist(X, Xreal))

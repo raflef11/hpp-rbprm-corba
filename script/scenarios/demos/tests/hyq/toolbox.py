@@ -99,10 +99,10 @@ def quaternionToMatrix(quat, homogeneous = False):
 	res = []
 	if homogeneous:
 		res = [
-				[1.0 - (yy + zz), xy - wz,         xz + wy,         0],
-				[xy + wz,         1.0 - (xx + zz), yz - wx,         0],
-				[xz - wy,         yz + wx,         1.0 - (xx + yy), 0],
-				[0,               0,               0,               1]
+				[1.0 - (yy + zz), xy - wz,         xz + wy,         0.0],
+				[xy + wz,         1.0 - (xx + zz), yz - wx,         0.0],
+				[xz - wy,         yz + wx,         1.0 - (xx + yy), 0.0],
+				[0.0,             0.0,             0.0,             1.0]
 			]
 	else:
 		res = [

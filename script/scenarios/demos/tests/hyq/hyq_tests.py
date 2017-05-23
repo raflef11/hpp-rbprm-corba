@@ -150,30 +150,4 @@ def testMGD(prefix):
 	print "errorY : " + str(abs(X[1] - Xreal[1]))
 	print "errorZ : " + str(abs(X[2] - Xreal[2]))
 	print "errorDist : " + str(tools.euclideanDist(X, Xreal))
-
-# tests
-def rht():
-	prefix = "rh"
-	posWorld = fullbody.getJointPosition(prefix + "_haa_joint")[0:3]
-	Tworld_rh = [[1, 0, 0, posWorld[0]], [0, 1, 0, posWorld[1]], [0, 0, 1, posWorld[2]], [0, 0, 0, 1]]
-	# Normally, posRh = [[0], [0], [0], [1]], posWorld = Tworld_rh * posRh
-	print "real posWorld : " + str(posWorld)
-	print "posWorld from transform matrix : " + str(tools.multiplyMatrices(Tworld_rh, [[0], [0], [0], [1]]))
-	# Normally, posRh = Trh_world * posWorld
-	Trh_world = tools.inverseHomogeneousMatrix(Tworld_rh)
-	print "desired posRh : [[0], [0], [0], [1]]"
-	posiWorld = [[posWorld[0]], [posWorld[1]], [posWorld[2]], [1]]
-	print "obtained posRh : " + str(tools.multiplyMatrices(Trh_world, posiWorld))
-
-def lht():
-	prefix = "lh"
-	posWorld = fullbody.getJointPosition(prefix + "_haa_joint")[0:3]
-	Tworld_lh = [[-1, 0, 0, posWorld[0]], [0, 1, 0, posWorld[1]], [0, 0, -1, posWorld[2]], [0, 0, 0, 1]]
-	# Normally, posLh = [[0], [0], [0], [1]], posWorld = Tworld_lh * posLh
-	print "real posWorld : " + str(posWorld)
-	print "posWorld from transform matrix : " + str(tools.multiplyMatrices(Tworld_lh, [[0], [0], [0], [1]]))
-	# Normally, posLh = Tlh_world * posWorld
-	Tlh_world = tools.inverseHomogeneousMatrix(Tworld_lh)
-	print "desired posLh : [[0], [0], [0], [1]]"
-	posiWorld = [[posWorld[0]], [posWorld[1]], [posWorld[2]], [1]]
-	print "obtained posLh : " + str(tools.multiplyMatrices(Tlh_world, posiWorld))
+	

@@ -111,7 +111,8 @@ def HyqMGD(prefix):
 				[rot[0][0], rot[0][1], rot[0][2], pos[0]],
 				[rot[1][0], rot[1][1], rot[1][2], pos[1]],
 				[rot[2][0], rot[2][1], rot[2][2], pos[2]],
-				[0.0,       0.0,             0.0,    1.0]]
+				[0.0,       0.0,             0.0,    1.0]
+			]
 
 	if (prefix == prefixes["lh"]) or (prefix == prefixes["lf"]): # one of the limbs on the left
 		q1 = -q1

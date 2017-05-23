@@ -103,6 +103,7 @@ def HyqMGD(prefix, q1, q2, q3):
 
 	if (prefix == prefixes[0]) or (prefix == prefixes[1]): # one of the limbs on the left
 		q1 = -q1
+	q1 -= tools.math.pi/2
 
 	# compute the MGD
 	c1 = tools.math.cos(q1); s1 = tools.math.sin(q1)
@@ -150,4 +151,3 @@ def testMGD(prefix):
 	print "errorY : " + str(abs(X[1] - Xreal[1]))
 	print "errorZ : " + str(abs(X[2] - Xreal[2]))
 	print "errorDist : " + str(tools.euclideanDist(X, Xreal))
-	

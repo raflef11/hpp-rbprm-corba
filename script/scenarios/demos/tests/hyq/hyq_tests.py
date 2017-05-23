@@ -97,18 +97,12 @@ def HyqMGD(prefix, q1, q2, q3):
 	if prefix not in prefixes:
 		return "Unknown prefix"
 
-	# get the transform between the world frame (model) and the hyq concerned limb (model). The position values are used in the world frame.
-	# and
-	# get the transform between the hyq concerned limb (model) and the base coordinate system used for the MGD
-	Tworldframe_limb = []
-	Tlimb_0 = []
+	# get the transform between the world frame and the base coordinate system used for the MGD
 	pos = fullbody.getJointPosition(prefix + "_haa_joint")[0:3]
+	Tworld_0 = [[0, -1, 0, pos[0]], [1, 0, 0, pos[1]], [0, 0, 1, pos[2]], [0, 0, 0, 1]]
+
 	if (prefix == prefixes[0]) or (prefix == prefixes[1]): # one of the limbs on the left
-		Tlimb_0 = [[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]
-		Tworldframe_limb = [[-1, 0, 0, pos[0]], [0, 1, 0, pos[1]], [0, 0, -1, pos[2]], [0, 0, 0, 1]]
-	else: # one of the limbs on the right
-		Tlimb_0 = [[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
-		Tworldframe_limb = [[1, 0, 0, pos[0]], [0, 1, 0, pos[1]], [0, 0, 1, pos[2]], [0, 0, 0, 1]]
+		q1 = -q1
 
 	# compute the MGD
 	c1 = tools.math.cos(q1); s1 = tools.math.sin(q1)
@@ -129,8 +123,8 @@ def HyqMGD(prefix, q1, q2, q3):
 	X3 = [[l3], [0], [0], [1]]
 	X0 = tools.multiplyMatrices(T03, X3) # X0 = T03 * X3
 
-	# Xworldframe = Tworldframe_limb * Tlimb_0 * X0
-	return tools.multiplyMatrices(Tworldframe_limb, tools.multiplyMatrices(Tlimb_0, X0)), tools.multiplyMatrices(tools.multiplyMatrices(Tworldframe_limb, Tlimb_0), T03)
+	# Xworldframe = Tworld_0 * X0
+	return tools.multiplyMatrices(Tworld_0, X0), tools.multiplyMatrices(Tworld_0, T03)
 
 # MGI of Hyq
 def HyqMGI(prefix, footPos):
@@ -156,3 +150,30 @@ def testMGD(prefix):
 	print "errorY : " + str(abs(X[1] - Xreal[1]))
 	print "errorZ : " + str(abs(X[2] - Xreal[2]))
 	print "errorDist : " + str(tools.euclideanDist(X, Xreal))
+
+# tests
+def rht():
+	prefix = "rh"
+	posWorld = fullbody.getJointPosition(prefix + "_haa_joint")[0:3]
+	Tworld_rh = [[1, 0, 0, posWorld[0]], [0, 1, 0, posWorld[1]], [0, 0, 1, posWorld[2]], [0, 0, 0, 1]]
+	# Normally, posRh = [[0], [0], [0], [1]], posWorld = Tworld_rh * posRh
+	print "real posWorld : " + str(posWorld)
+	print "posWorld from transform matrix : " + str(tools.multiplyMatrices(Tworld_rh, [[0], [0], [0], [1]]))
+	# Normally, posRh = Trh_world * posWorld
+	Trh_world = tools.inverseHomogeneousMatrix(Tworld_rh)
+	print "desired posRh : [[0], [0], [0], [1]]"
+	posiWorld = [[posWorld[0]], [posWorld[1]], [posWorld[2]], [1]]
+	print "obtained posRh : " + str(tools.multiplyMatrices(Trh_world, posiWorld))
+
+def lht():
+	prefix = "lh"
+	posWorld = fullbody.getJointPosition(prefix + "_haa_joint")[0:3]
+	Tworld_lh = [[-1, 0, 0, posWorld[0]], [0, 1, 0, posWorld[1]], [0, 0, -1, posWorld[2]], [0, 0, 0, 1]]
+	# Normally, posLh = [[0], [0], [0], [1]], posWorld = Tworld_lh * posLh
+	print "real posWorld : " + str(posWorld)
+	print "posWorld from transform matrix : " + str(tools.multiplyMatrices(Tworld_lh, [[0], [0], [0], [1]]))
+	# Normally, posLh = Tlh_world * posWorld
+	Tlh_world = tools.inverseHomogeneousMatrix(Tworld_lh)
+	print "desired posLh : [[0], [0], [0], [1]]"
+	posiWorld = [[posWorld[0]], [posWorld[1]], [posWorld[2]], [1]]
+	print "obtained posLh : " + str(tools.multiplyMatrices(Tlh_world, posiWorld))

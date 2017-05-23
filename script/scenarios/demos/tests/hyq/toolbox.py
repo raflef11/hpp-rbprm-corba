@@ -15,7 +15,8 @@ class MyEx(Exception):
 					6 : "A homogeneous matrix must have the size (4, 4)",
 					7 : "Matrix size not consistent (not rectangular)",
 					8 : "Impossible to multiply an empty matrix with a not empty matrix",
-					9 : "The number of columns (row size) of the first matrix must be equal to the number of rows (column size) of the second matrix in order to multiply them"
+					9 : "The number of columns (row size) of the first matrix must be equal to the number of rows (column size) of the second matrix in order to multiply them",
+					10 : "A quaternion must contain exactly 4 elements as follows: [w, x, y, z]"
 				 }
 
 	def __init__(self, val):
@@ -74,6 +75,41 @@ def buildQuaternion(vector, angle, convention):
 	res = [math.cos(angle/2)]
 	for i in range(len(vector)):
 		res.append(vector[i]*math.sin(angle/2))
+
+	return res
+
+## QUATERNIONTOMATRIX
+# Convert a quaternion to a rotation matrix
+#
+# @param [In] quat The considered quaternion (normalized or not) in the convention [w, x, y, z]
+# @param [In] homogeneous A boolean in order to choose if we want a homogeneous matrix (True) or just a simple rotation matrix (False), default value : False
+#
+# @return The corresponding rotation matrix (or homogeneous matrix if we choose it)
+def quaternionToMatrix(quat, homogeneous = False):
+	# parameters consistence checking
+	if len(quat) != 4:
+		raise MyEx(4)
+
+	n = quat[0]*quat[0] + quat[1]*quat[1] + quat[2]*quat[2] + quat[3]*quat[3]
+	s = 0.0 if n == 0.0 else 2.0/n
+	wx = s * quat[0] * quat[1] ; wy = s * quat[0] * quat[2] ; wz = s * quat[0] * quat[3]
+	xx = s * quat[1] * quat[1] ; xy = s * quat[1] * quat[2] ; xz = s * quat[1] * quat[3]
+	yy = s * quat[2] * quat[2] ; yz = s * quat[2] * quat[3] ; zz = s * quat[3] * quat[3]
+
+	res = []
+	if homogeneous:
+		res = [
+				[1.0 - (yy + zz), xy - wz,         xz + wy,         0],
+				[xy + wz,         1.0 - (xx + zz), yz - wx,         0],
+				[xz - wy,         yz + wx,         1.0 - (xx + yy), 0],
+				[0,               0,               0,               1]
+			]
+	else:
+		res = [
+				[1.0 - (yy + zz),     xy - wz,             xz + wy    ],
+				[    xy + wz,     1.0 - (xx + zz),         yz - wx    ],
+				[    xz - wy,         yz + wx,         1.0 - (xx + yy)]
+			]
 
 	return res
 

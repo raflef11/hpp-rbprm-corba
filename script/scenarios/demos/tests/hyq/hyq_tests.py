@@ -92,16 +92,28 @@ r(q_init)
 # @param [In] q3 The kfe configuration
 #
 # @return The position of the foot knwowing the configuration of its limb; The transform matrix between world frame and the last joint (kfe)
-def HyqMGD(prefix, q1, q2, q3):
-	prefixes = ["lh", "lf", "rh", "rf"]
-	if prefix not in prefixes:
+def HyqMGD(prefix):
+	prefixes = {"lh" : 7, "lf" : 10, "rh" : 13, "rf" : 16}
+	if prefix not in prefixes.keys():
 		return "Unknown prefix"
+
+	k = prefixes[prefix]
+	[q1, q2, q3] = fullbody.getCurrentConfig()[k:k+3]
 
 	# get the transform between the world frame and the base coordinate system used for the MGD
 	pos = fullbody.getJointPosition(prefix + "_haa_joint")[0:3]
-	Tworld_0 = [[0, -1, 0, pos[0]], [1, 0, 0, pos[1]], [0, 0, 1, pos[2]], [0, 0, 0, 1]]
+	robotOrientQuat = fullbody.getCurrentConfig()[3:7]
+	robotOrient = tools.quaternionToMatrix(robotOrientQuat, True)
+	mgdBaseOrient = [[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+	rot = tools.multiplyMatrices(robotOrient, mgdBaseOrient)
 
-	if (prefix == prefixes[0]) or (prefix == prefixes[1]): # one of the limbs on the left
+	Tworld_0 = [
+				[rot[0][0], rot[0][1], rot[0][2], pos[0]],
+				[rot[1][0], rot[1][1], rot[1][2], pos[1]],
+				[rot[2][0], rot[2][1], rot[2][2], pos[2]],
+				[0.0,       0.0,             0.0,    1.0]]
+
+	if (prefix == prefixes["lh"]) or (prefix == prefixes["lf"]): # one of the limbs on the left
 		q1 = -q1
 	q1 -= tools.math.pi/2
 
@@ -128,7 +140,7 @@ def HyqMGD(prefix, q1, q2, q3):
 	return tools.multiplyMatrices(Tworld_0, X0), tools.multiplyMatrices(Tworld_0, T03)
 
 # MGI of Hyq
-def HyqMGI(prefix, footPos):
+def HyqMGI(prefix):
 	pass
 
 # set a end-effector position
@@ -137,14 +149,12 @@ def setEndEffectorPosition(name, pos):
 
 # Test MGD Hyq
 def testMGD(prefix):
-	prefixes = {"lh" : 7, "lf" : 10, "rh" : 13, "rf" : 16}
-	if prefix not in prefixes.keys():
+	prefixes = ["lh", "lf", "rh", "rf"]
+	if prefix not in prefixes:
 		return "Not a valid prefix"
 	Xreal = fullbody.getJointPosition(prefix + "_foot_joint")[0:3]
 	print prefix + "_foot_joint position from model : " + str(Xreal)
-	k = prefixes[prefix]
-	[q1, q2, q3] = fullbody.getCurrentConfig()[k:k+3]
-	Xot, _ = HyqMGD(prefix, q1, q2, q3)
+	Xot, _ = HyqMGD(prefix)
 	X = [Xot[0][0], Xot[1][0], Xot[2][0]]
 	print prefix + "_foot_joint position from MGD : " + str(X)
 	print "errorX : " + str(abs(X[0] - Xreal[0]))

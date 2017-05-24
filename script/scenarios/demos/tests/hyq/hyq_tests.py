@@ -106,7 +106,7 @@ class Hyq:
 			return "Unknown joint name"
 		# inverse front and rear in order to get the real position of the desired limb
 		if prefix == prefixes[0]:
-			prefix == prefixes[1]
+			prefix = prefixes[1]
 		elif prefix == prefixes[1]:
 			prefix = prefixes[0]
 		elif prefix == prefixes[2]:

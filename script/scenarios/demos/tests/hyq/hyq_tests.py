@@ -115,7 +115,7 @@ class Hyq:
 			prefix = prefixes[2]
 		return fullbody.getJointPosition(prefix + "_" + name + "_joint")
 
-	# HYQMGD (Currently not validated)
+	# HYQMGD
 	# Compute the MGD of the Hyq
 	#
 	# @param [In] prefix The prefix of the considered joint in order to identify it
@@ -147,9 +147,10 @@ class Hyq:
 					[0.0,       0.0,             0.0,    1.0]
 				]
 
-		if (prefix == prefixes["lh"]) or (prefix == prefixes["lf"]): # one of the limbs on the left
+		if (prefix == "lh") or (prefix == "lf"): # one of the limbs on the left
 			q1 = -q1
 		q1 -= tools.math.pi/2
+		print "*** q *** : " + str([q1, q2, q3])
 
 		# compute the MGD
 		c1 = tools.math.cos(q1); s1 = tools.math.sin(q1)
@@ -173,13 +174,21 @@ class Hyq:
 		# Xworldframe = Tworld_0 * X0
 		return tools.multiplyMatrices(Tworld_0, X0), tools.multiplyMatrices(Tworld_0, T03)
 
+# ---------------------
+# Work in progress zone
+# ---------------------
+
 # MGI of Hyq
 def HyqMGI(prefix):
 	pass
 
-# set a end-effector position
+# set an end-effector position
 def setEndEffectorPosition(name, pos):
 	pass
+
+# ----------
+# Tests zone
+# ----------
 
 # Test MGD Hyq
 def testMGD(prefix):
@@ -190,13 +199,13 @@ def testMGD(prefix):
 	print prefix + "_foot_joint position from model : " + str(Xreal)
 	Xot, _ = Hyq.HyqMGD(prefix)
 	X = [Xot[0][0], Xot[1][0], Xot[2][0]]
-	print prefix + "_foot_joint position from MGD : " + str(X)
+	print prefix + "_foot_joint position from MGD :   " + str(X)
 	print "errorX : " + str(abs(X[0] - Xreal[0]))
 	print "errorY : " + str(abs(X[1] - Xreal[1]))
 	print "errorZ : " + str(abs(X[2] - Xreal[2]))
 	print "errorDist : " + str(tools.euclideanDist(X, Xreal))
 
-#  test each limb MGD
+# test each limb MGD
 def eachLimbMGD():
 	print "---"
 	for p in ["lh", "lf", "rh", "rf"]:

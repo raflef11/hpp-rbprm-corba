@@ -83,62 +83,95 @@ q_init = hyq_ref[:]
 #fullbody.setStartState(q_init, [rLegId, lLegId, rArmId, lArmId])
 r(q_init)
 
-# HYQMGD (Currently not validated)
-# Compute the MGD of the Hyq
-#
-# @param [In] prefix The prefix of the considered joint in order to identify it
-# @param [In] q1 The haa configuration
-# @param [In] q2 The hfe configuration
-# @param [In] q3 The kfe configuration
-#
-# @return The position of the foot knwowing the configuration of its limb; The transform matrix between world frame and the last joint (kfe)
-def HyqMGD(prefix):
-	prefixes = {"lh" : 7, "lf" : 10, "rh" : 13, "rf" : 16}
-	if prefix not in prefixes.keys():
-		return "Unknown prefix"
+## HYQ
+# Class to implement additional methods related to Hyq
+class Hyq:
 
-	k = prefixes[prefix]
-	[q1, q2, q3] = fullbody.getCurrentConfig()[k:k+3]
+	## GETJOINTPOSITION
+	# The fullbody.getJointPosition() is wrong, it inverses the front and the rear
+	# This method corrects this error
+	#
+	# @param [In] prefix The prefix for the desired limb
+	# @param [in] name The name of the desired joint
+	#
+	# @return The position of the joint of the specified limb
+	@staticmethod
+	def getJointPosition(prefix, name):
+		prefixes = ["lh", "lf", "rh", "rf"]
+		names = ["haa", "hfe", "kfe", "foot"]
 
-	# get the transform between the world frame and the base coordinate system used for the MGD
-	pos = fullbody.getJointPosition(prefix + "_haa_joint")[0:3]
-	robotOrientQuat = fullbody.getCurrentConfig()[3:7]
-	robotOrient = tools.quaternionToMatrix(robotOrientQuat, True)
-	mgdBaseOrient = [[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
-	rot = tools.multiplyMatrices(robotOrient, mgdBaseOrient)
+		if prefix not in prefixes:
+			return "Unknown prefix"
+		if name not in names:
+			return "Unknown joint name"
+		# inverse front and rear in order to get the real position of the desired limb
+		if prefix == prefixes[0]:
+			prefix == prefixes[1]
+		elif prefix == prefixes[1]:
+			prefix = prefixes[0]
+		elif prefix == prefixes[2]:
+			prefix = prefixes[3]
+		else:
+			prefix = prefixes[2]
+		return fullbody.getJointPosition(prefix + "_" + name + "_joint")
 
-	Tworld_0 = [
-				[rot[0][0], rot[0][1], rot[0][2], pos[0]],
-				[rot[1][0], rot[1][1], rot[1][2], pos[1]],
-				[rot[2][0], rot[2][1], rot[2][2], pos[2]],
-				[0.0,       0.0,             0.0,    1.0]
-			]
+	# HYQMGD (Currently not validated)
+	# Compute the MGD of the Hyq
+	#
+	# @param [In] prefix The prefix of the considered joint in order to identify it
+	# @param [In] q1 The haa configuration
+	# @param [In] q2 The hfe configuration
+	# @param [In] q3 The kfe configuration
+	#
+	# @return The position of the foot knwowing the configuration of its limb; The transform matrix between world frame and the last joint (kfe)
+	@staticmethod
+	def HyqMGD(prefix):
+		prefixes = {"lh" : 7, "lf" : 10, "rh" : 13, "rf" : 16}
+		if prefix not in prefixes.keys():
+			return "Unknown prefix"
 
-	if (prefix == prefixes["lh"]) or (prefix == prefixes["lf"]): # one of the limbs on the left
-		q1 = -q1
-	q1 -= tools.math.pi/2
+		k = prefixes[prefix]
+		[q1, q2, q3] = fullbody.getCurrentConfig()[k:k+3]
 
-	# compute the MGD
-	c1 = tools.math.cos(q1); s1 = tools.math.sin(q1)
-	c2 = tools.math.cos(q2); s2 = tools.math.sin(q2)
-	c3 = tools.math.cos(q3); s3 = tools.math.sin(q3)
-	#l1 = 0.082; l2 = 0.35; l3 = 0.35
-	l1 = tools.euclideanDist(fullbody.getJointPosition(prefix + "_haa_joint")[0:3], fullbody.getJointPosition(prefix + "_hfe_joint")[0:3])
-	l2 = tools.euclideanDist(fullbody.getJointPosition(prefix + "_hfe_joint")[0:3], fullbody.getJointPosition(prefix + "_kfe_joint")[0:3])
-	l3 = tools.euclideanDist(fullbody.getJointPosition(prefix + "_kfe_joint")[0:3], fullbody.getJointPosition(prefix + "_foot_joint")[0:3])
+		# get the transform between the world frame and the base coordinate system used for the MGD
+		pos = Hyq.getJointPosition(prefix, "haa")[0:3]
+		robotOrientQuat = fullbody.getCurrentConfig()[3:7]
+		robotOrient = tools.quaternionToMatrix(robotOrientQuat, True)
+		mgdBaseOrient = [[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+		rot = tools.multiplyMatrices(robotOrient, mgdBaseOrient)
 
-	T01 = [[c1, -s1, 0, 0], [0, 0, -1, 0], [s1, c1, 0, 0], [0, 0, 0, 1]]
-	T12 = [[c2, -s2, 0, l1], [0, 0, 1, 0], [-s2, -c2, 0, 0], [0, 0, 0, 1]]
-	T23 = [[c3, -s3, 0, l2], [s3, c3, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+		Tworld_0 = [
+					[rot[0][0], rot[0][1], rot[0][2], pos[0]],
+					[rot[1][0], rot[1][1], rot[1][2], pos[1]],
+					[rot[2][0], rot[2][1], rot[2][2], pos[2]],
+					[0.0,       0.0,             0.0,    1.0]
+				]
 
-	T03 = tools.multiplyMatrices(tools.multiplyMatrices(T01, T12), T23)
+		if (prefix == prefixes["lh"]) or (prefix == prefixes["lf"]): # one of the limbs on the left
+			q1 = -q1
+		q1 -= tools.math.pi/2
 
-	# position of the OT
-	X3 = [[l3], [0], [0], [1]]
-	X0 = tools.multiplyMatrices(T03, X3) # X0 = T03 * X3
+		# compute the MGD
+		c1 = tools.math.cos(q1); s1 = tools.math.sin(q1)
+		c2 = tools.math.cos(q2); s2 = tools.math.sin(q2)
+		c3 = tools.math.cos(q3); s3 = tools.math.sin(q3)
+		#l1 = 0.082; l2 = 0.35; l3 = 0.35
+		l1 = tools.euclideanDist(Hyq.getJointPosition(prefix, "haa")[0:3], Hyq.getJointPosition(prefix, "hfe")[0:3])
+		l2 = tools.euclideanDist(Hyq.getJointPosition(prefix, "hfe")[0:3], Hyq.getJointPosition(prefix, "kfe")[0:3])
+		l3 = tools.euclideanDist(Hyq.getJointPosition(prefix, "kfe")[0:3], Hyq.getJointPosition(prefix, "foot")[0:3])
 
-	# Xworldframe = Tworld_0 * X0
-	return tools.multiplyMatrices(Tworld_0, X0), tools.multiplyMatrices(Tworld_0, T03)
+		T01 = [[c1, -s1, 0, 0], [0, 0, -1, 0], [s1, c1, 0, 0], [0, 0, 0, 1]]
+		T12 = [[c2, -s2, 0, l1], [0, 0, 1, 0], [-s2, -c2, 0, 0], [0, 0, 0, 1]]
+		T23 = [[c3, -s3, 0, l2], [s3, c3, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+
+		T03 = tools.multiplyMatrices(tools.multiplyMatrices(T01, T12), T23)
+
+		# position of the OT
+		X3 = [[l3], [0], [0], [1]]
+		X0 = tools.multiplyMatrices(T03, X3) # X0 = T03 * X3
+
+		# Xworldframe = Tworld_0 * X0
+		return tools.multiplyMatrices(Tworld_0, X0), tools.multiplyMatrices(Tworld_0, T03)
 
 # MGI of Hyq
 def HyqMGI(prefix):
@@ -153,12 +186,19 @@ def testMGD(prefix):
 	prefixes = ["lh", "lf", "rh", "rf"]
 	if prefix not in prefixes:
 		return "Not a valid prefix"
-	Xreal = fullbody.getJointPosition(prefix + "_foot_joint")[0:3]
+	Xreal = Hyq.getJointPosition(prefix, "foot")[0:3]
 	print prefix + "_foot_joint position from model : " + str(Xreal)
-	Xot, _ = HyqMGD(prefix)
+	Xot, _ = Hyq.HyqMGD(prefix)
 	X = [Xot[0][0], Xot[1][0], Xot[2][0]]
 	print prefix + "_foot_joint position from MGD : " + str(X)
 	print "errorX : " + str(abs(X[0] - Xreal[0]))
 	print "errorY : " + str(abs(X[1] - Xreal[1]))
 	print "errorZ : " + str(abs(X[2] - Xreal[2]))
 	print "errorDist : " + str(tools.euclideanDist(X, Xreal))
+
+#  test each limb MGD
+def eachLimbMGD():
+	print "---"
+	for p in ["lh", "lf", "rh", "rf"]:
+		testMGD(p)
+		print "---"

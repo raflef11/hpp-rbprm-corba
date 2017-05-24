@@ -115,7 +115,7 @@ class Hyq:
 			prefix = prefixes[2]
 		return fullbody.getJointPosition(prefix + "_" + name + "_joint")
 
-	# HYQMGD
+	# MGD
 	# Compute the MGD of the Hyq
 	#
 	# @param [In] prefix The prefix of the considered joint in order to identify it
@@ -125,7 +125,7 @@ class Hyq:
 	#
 	# @return The position of the foot knwowing the configuration of its limb; The transform matrix between world frame and the last joint (kfe)
 	@staticmethod
-	def HyqMGD(prefix):
+	def MGD(prefix):
 		prefixes = {"lh" : 7, "lf" : 10, "rh" : 13, "rf" : 16}
 		if prefix not in prefixes.keys():
 			return "Unknown prefix"
@@ -196,7 +196,7 @@ def testMGD(prefix):
 		return "Not a valid prefix"
 	Xreal = Hyq.getJointPosition(prefix, "foot")[0:3]
 	print prefix + "_foot_joint position from model : " + str(Xreal)
-	Xot, _ = Hyq.HyqMGD(prefix)
+	Xot, _ = Hyq.MGD(prefix)
 	X = [Xot[0][0], Xot[1][0], Xot[2][0]]
 	print prefix + "_foot_joint position from MGD :   " + str(X)
 	print "errorX : " + str(abs(X[0] - Xreal[0]))

@@ -150,7 +150,6 @@ class Hyq:
 		if (prefix == "lh") or (prefix == "lf"): # one of the limbs on the left
 			q1 = -q1
 		q1 -= tools.math.pi/2
-		print "*** q *** : " + str([q1, q2, q3])
 
 		# compute the MGD
 		c1 = tools.math.cos(q1); s1 = tools.math.sin(q1)

@@ -113,6 +113,15 @@ def quaternionToMatrix(quat, homogeneous = False):
 
 	return res
 
+## MATRIXTOQUATERNION
+# Convert a rotation matrix to a quaternion
+#
+# @param [In] mat The considered rotation matrix (3x3)
+#
+# @return The corresponding quaternion
+def matrixToQuaternion(mat):
+	pass
+
 ## ANGLE2D
 # Get the angle from 3 2D-points (not oriented)
 #

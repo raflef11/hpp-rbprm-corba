@@ -181,6 +181,40 @@ class Hyq:
 def HyqMGI(prefix):
 	pass
 
+def transformXworldToX0(prefix, Xworld):
+	prefixes = ["lh", "lf", "rh", "rf"]
+	if prefix not in prefixes:
+		return "Not a valid prefix"
+	if len(Xworld) != 7:
+		return "Xworld must be a cartesian position and a [w,x,y,z] quaternion : vector of size 7"
+
+	# get Tworld_0
+	pos = Hyq.getJointPosition(prefix, "haa")[0:3]
+	robotOrientQuat = fullbody.getCurrentConfig()[3:7]
+	robotOrient = tools.quaternionToMatrix(robotOrientQuat)
+	mgdBaseOrient = [[0, -1, 0], [1, 0, 0], [0, 0, 1]]
+	rot = tools.multiplyMatrices(robotOrient, mgdBaseOrient)
+
+	Tworld_0 = [[rot[0][0], rot[0][1], rot[0][2], pos[0]],
+				[rot[1][0], rot[1][1], rot[1][2], pos[1]],
+				[rot[2][0], rot[2][1], rot[2][2], pos[2]],
+				[0.0,       0.0,             0.0,    1.0]]
+
+	#get T0_world
+	T0_world = tools.inverseHomogeneousMatrix(Tworld_0)
+
+	# X0 = T0_world * Xworld
+	# ---
+	# P0 = T0_world * Pworld
+	# R0 = R0_world * Rworld
+	P0 = tools.multiplyMatrices(T0_world, [[Xworld[0]], [Xworld[1]], [Xworld[2]], [1]])
+	Rworld = tools.quaternionToMatrix(Xworld[3:7])
+	R0_world = tools.transposeMatrix(rot)
+	R0 = tools.multiplyMatrices(R0_world, Rworld)
+	#quat0 = tools.matrixToQuaternion(R0) # does not exist yet
+	#return ([P0[0][0], P0[1][0], P0[2][0]] + quat0)
+	return [P0[0][0], P0[1][0], P0[2][0]], R0 # P0, R0
+
 # set an end-effector position
 def setEndEffectorPosition(name, pos):
 	pass

@@ -244,3 +244,12 @@ def eachLimbMGD():
 	for p in ["lh", "lf", "rh", "rf"]:
 		testMGD(p)
 		print "---"
+
+def mgiq1test(XworldDes):
+	pass
+
+def mgiq2test(q1, XworldDes):
+	pass
+
+def mgiq3test(q1, q2, XworldDes):
+	pass

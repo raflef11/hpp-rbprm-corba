@@ -14,9 +14,11 @@ class MyEx(Exception):
 					5 : "Impossible to compare two vectors with different sizes",
 					6 : "A homogeneous matrix must have the size (4, 4)",
 					7 : "Matrix size not consistent (not rectangular)",
-					8 : "Impossible to multiply an empty matrix with a not empty matrix",
+					8 : "Impossible to multiply or add an empty matrix with a not empty matrix",
 					9 : "The number of columns (row size) of the first matrix must be equal to the number of rows (column size) of the second matrix in order to multiply them",
-					10 : "A quaternion must contain exactly 4 elements as follows: [w, x, y, z]"
+					10 : "A quaternion must contain exactly 4 elements as follows: [w, x, y, z]",
+					11 : "Only the '+' or '-' operators are allowed for matrices addition",
+					12 : "Impossible to add two matrices of different sizes"
 				 }
 
 	def __init__(self, val):
@@ -500,6 +502,50 @@ def inverseHomogeneousMatrix(HMatrix):
 	res[3][3] = 1
 	return res
 
+## ADDMATRICES
+# Add or substract two matrices
+#
+# @param [In] mat1 The first operand
+# @param [In] mat2 The second operand
+# @param [In] sign The sign '+' or '-' whether we want to add or substract mat2 to mat1, default value: '+'
+#
+# @return mat1 +/- mat2
+def addMatrices(mat1, mat2, sign = '+'):
+	if (sign != '+') and (sign != '-'):
+		raise MyEx(11)
+	if (len(mat1) == 0) and (len(mat2) == 0):
+		return []
+	elif (len(mat1) == 0) or (len(mat2) == 0):
+		raise MyEx(8)
+	else:
+		# parameters consistence checking
+		colSize1 = len(mat1[0])
+		for row in mat1:
+			if len(row) != colSize1:
+				raise MyEx(7)
+		colSize2 = len(mat2[0])
+		for row in mat2:
+			if len(row) != colSize2:
+				raise MyEx(7)
+		if (len(mat1) != len(mat2)) or (colSize1 != colSize2):
+			raise MyEx(12)
+
+		res = []
+		if sign == '+':
+			for row in range(len(mat1)):
+				line = []
+				for col in range(colSize1):
+					line.append(mat1[row][col] + mat2[row][col])
+				res.append(line[:])
+		else:
+			for row in range(len(mat1)):
+				line = []
+				for col in range(colSize1):
+					line.append(mat1[row][col] - mat2[row][col])
+				res.append(line[:])
+		return res
+
+
 ## POINTCLOUDSMANAGER
 # Class to operate on point clouds, also used as a namespace
 class PointCloudsManager:
@@ -671,54 +717,56 @@ def evalZMP(convexHull, comPos, comAccel, g = -9.80665):
 	# return the distance to the center of the CHSP (to minimize)
 	return euclideanDist(zmp, wcentroid)
 
-# buildQuaternion example
-v = [0, 0, 1] # Rotation around z-axiz
-a = 90 # rotation of 90 degrees
-quat = buildQuaternion(v, a, AngleEnum.DEGREES)
-print
-print "Quaternion : axis = " + str(v) + " , angle = " + str(a) + " --> " + str(quat)
+if __name__ == "__main__":
+	
+	# buildQuaternion example
+	v = [0, 0, 1] # Rotation around z-axiz
+	a = 90 # rotation of 90 degrees
+	quat = buildQuaternion(v, a, AngleEnum.DEGREES)
+	print
+	print "Quaternion : axis = " + str(v) + " , angle = " + str(a) + " --> " + str(quat)
 
-# convexHull example
-pointCloud = []
-pointCloud.append([3, 4])
-pointCloud.append([4, 5])
-pointCloud.append([4, 3.5])
-pointCloud.append([5, 5])
-pointCloud.append([5, 4])
-pointCloud.append([5, 2])
-pointCloud.append([6, 5.5])
-pointCloud.append([6, 3])
-pointCloud.append([6.5, 2])
-pointCloud.append([7, 5.5])
-pointCloud.append([7, 4])
-pointCloud.append([7, 1.5])
-pointCloud.append([8, 5.5])
-pointCloud.append([8, 3.5])
-pointCloud.append([8, 1])
-pointCloud.append([8, 0.5])
-pointCloud.append([8.5, 2.5])
-pointCloud.append([9, 4])
-pointCloud.append([10, 3])
-pointCloud.append([11, 3])
+	# convexHull example
+	pointCloud = []
+	pointCloud.append([3, 4])
+	pointCloud.append([4, 5])
+	pointCloud.append([4, 3.5])
+	pointCloud.append([5, 5])
+	pointCloud.append([5, 4])
+	pointCloud.append([5, 2])
+	pointCloud.append([6, 5.5])
+	pointCloud.append([6, 3])
+	pointCloud.append([6.5, 2])
+	pointCloud.append([7, 5.5])
+	pointCloud.append([7, 4])
+	pointCloud.append([7, 1.5])
+	pointCloud.append([8, 5.5])
+	pointCloud.append([8, 3.5])
+	pointCloud.append([8, 1])
+	pointCloud.append([8, 0.5])
+	pointCloud.append([8.5, 2.5])
+	pointCloud.append([9, 4])
+	pointCloud.append([10, 3])
+	pointCloud.append([11, 3])
 
-cH = PointCloudsManager.convexHull2D(pointCloud)
-print ""
-print "Point cloud : " + str(pointCloud)
-print "Convex hull : " + str(cH)
+	cH = PointCloudsManager.convexHull2D(pointCloud)
+	print ""
+	print "Point cloud : " + str(pointCloud)
+	print "Convex hull : " + str(cH)
 
-# weightedCentroid example
-poly = [[0, 0], [0.5, 0], [100, 0], [100, 100], [0, 100], [0, 0.5]]
-realCenter = [50, 50]
-medX = 0; medY = 0
-for p in poly:
-	medX += p[0]
-	medY += p[1]
-medX /= (len(poly)*1.0)
-medY /= (len(poly)*1.0)
-centroid = [medX, medY]
-wcentroid = weightedCentroidConvex2D(poly)
-print ""
-print "Polygon : " + str(poly)
-print "Centroid : " + str(centroid)
-print "Weighted centroid : " + str(wcentroid)
-print "Real center : " + str(realCenter)
+	# weightedCentroid example
+	poly = [[0, 0], [0.5, 0], [100, 0], [100, 100], [0, 100], [0, 0.5]]
+	realCenter = [50, 50]
+	medX = 0; medY = 0
+	for p in poly:
+		medX += p[0]
+		medY += p[1]
+	medX /= (len(poly)*1.0)
+	medY /= (len(poly)*1.0)
+	centroid = [medX, medY]
+	wcentroid = weightedCentroidConvex2D(poly)
+	print ""
+	print "Polygon : " + str(poly)
+	print "Centroid : " + str(centroid)
+	print "Weighted centroid : " + str(wcentroid)
+	print "Real center : " + str(realCenter)

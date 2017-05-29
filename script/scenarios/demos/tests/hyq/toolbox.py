@@ -18,7 +18,7 @@ class MyEx(Exception):
 					9 : "The number of columns (row size) of the first matrix must be equal to the number of rows (column size) of the second matrix in order to multiply them",
 					10 : "A quaternion must contain exactly 4 elements as follows: [w, x, y, z]",
 					11 : "Only the '+' or '-' operators are allowed for matrices addition",
-					12 : "Impossible to add two matrices of different sizes"
+					12 : "Impossible to add two matrices with different sizes"
 				 }
 
 	def __init__(self, val):
@@ -718,7 +718,7 @@ def evalZMP(convexHull, comPos, comAccel, g = -9.80665):
 	return euclideanDist(zmp, wcentroid)
 
 if __name__ == "__main__":
-	
+
 	# buildQuaternion example
 	v = [0, 0, 1] # Rotation around z-axiz
 	a = 90 # rotation of 90 degrees

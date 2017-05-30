@@ -18,7 +18,9 @@ class MyEx(Exception):
 					9 : "The number of columns (row size) of the first matrix must be equal to the number of rows (column size) of the second matrix in order to multiply them",
 					10 : "A quaternion must contain exactly 4 elements as follows: [w, x, y, z]",
 					11 : "Only the '+' or '-' operators are allowed for matrices addition",
-					12 : "Impossible to add two matrices with different sizes"
+					12 : "Impossible to add two matrices with different sizes",
+					13 : "A rotation matrix must have the size (3, 3)",
+					14 : "The input matrix does not allow to find a corresponding quaternion"
 				 }
 
 	def __init__(self, val):
@@ -117,12 +119,58 @@ def quaternionToMatrix(quat, homogeneous = False):
 
 ## MATRIXTOQUATERNION
 # Convert a rotation matrix to a quaternion
+# Warning : If the input matrix is not a rotation matrix, the output quaternion will not be consistent
 #
 # @param [In] mat The considered rotation matrix (3x3)
 #
 # @return The corresponding quaternion
 def matrixToQuaternion(mat):
-	pass
+	# parameters consistence checking
+	if len(mat) != 3:
+		raise MyEx(13)
+	for row in mat:
+		if len(row) != 3:
+			raise MyEx(13)
+
+	m00 = mat[0][0]; m01 = mat[0][1]; m02 = mat[0][2]
+	m10 = mat[1][0]; m11 = mat[1][1]; m12 = mat[1][2]
+	m20 = mat[2][0]; m21 = mat[2][1]; m22 = mat[2][2]
+
+	res = []
+
+	tx = (1 + m00 - m11 - m22)
+	ty = (1 - m00 + m11 - m22)
+	tz = (1 - m00 - m11 + m22)
+	tw = (1 + m00 + m11 + m22)
+
+	if tx > 0: # x-form condition
+		x = math.sqrt(tx/4.0)
+		y = (m10 + m01) / (4.0 * x)
+		z = (m20 + m02) / (4.0 * x)
+		w = -(m12 - m21) / (4.0 * x)
+		res += [w, x, y, z]
+	elif ty > 0: # y-form condition
+		y = math.sqrt(ty/4.0)
+		x = (m10 + m01) / (4.0 * y)
+		z = (m12 + m21) / (4.0 * y)
+		w = -(m20 - m02) / (4.0 * y)
+		res += [w, x, y, z]
+	elif tz > 0: # z-form condition
+		z = math.sqrt(tz/4.0)
+		x = (m20 + m02) / (4.0 * z)
+		y = (m12 + m21) / (4.0 * z)
+		w = -(m01 - m10) / (4.0 * z)
+		res += [w, x, y, z]
+	elif tw > 0: # w-form condition
+		w = math.sqrt(tw/4.0)
+		x = -(m12 - m21) / (4.0 * w)
+		y = -(m20 - m02) / (4.0 * w)
+		z = -(m01 - m10) / (4.0 * w)
+		res += [w, x, y, z]
+	else:
+		raise MyEx(14)
+
+	return res
 
 ## ANGLE2D
 # Get the angle from 3 2D-points (not oriented)

@@ -181,14 +181,11 @@ def d(step=0.06):
 	print "computing contact plan"
 	genPlan(step)
 	
-def e():
+def e(step = 0.5):
 	print "displaying contact plan"
-	contactPlan()
+	contactPlan(step)
 	
 print "Root path generated in " + str(tp.t) + " ms."
-
-#~ d();e()
-#d(0.0005);
 
 import sys
 print ""
@@ -199,4 +196,5 @@ fullBody.addRequiredLimb("lfleg")
 print "Required limbs :"
 sys.stdout.flush()
 fullBody.printRequiredLimbs()
-d(0.0005)
+
+d(0.004);e(0.01)

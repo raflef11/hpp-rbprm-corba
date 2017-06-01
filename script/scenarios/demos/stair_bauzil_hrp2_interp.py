@@ -28,26 +28,35 @@ r = tp.Viewer (ps, viewerClient=tp.r.client)
 #~ AFTER loading obstacles
 rLegId = '0rLeg'
 rLeg = 'RLEG_JOINT0'
-rLegOffset = [0,-0.105,0,]
-rLegNormal = [0,1,0]
+rLegOffset = [0,0,-0.105]
+rLegNormal = [0,0,1]
 rLegx = 0.09; rLegy = 0.05
 fullBody.addLimb(rLegId,rLeg,'',rLegOffset,rLegNormal, rLegx, rLegy, 10000, "manipulability", 0.1)
 
 lLegId = '1lLeg'
 lLeg = 'LLEG_JOINT0'
-lLegOffset = [0,-0.105,0]
-lLegNormal = [0,1,0]
+lLegOffset = [0,0,-0.105]
+lLegNormal = [0,0,1]
 lLegx = 0.09; lLegy = 0.05
 fullBody.addLimb(lLegId,lLeg,'',lLegOffset,rLegNormal, lLegx, lLegy, 10000, "manipulability", 0.1)
 
 rarmId = '3Rarm'
 rarm = 'RARM_JOINT0'
 rHand = 'RARM_JOINT5'
-rArmOffset = [0,0,-0.1]
+rArmOffset = [0,0,-0.1075]
 rArmNormal = [0,0,1]
 rArmx = 0.024; rArmy = 0.024
 #disabling collision for hook
-fullBody.addLimb(rarmId,rarm,rHand,rArmOffset,rArmNormal, rArmx, rArmy, 10000, "manipulability", 0.05, "_6_DOF", True)
+#~ fullBody.addLimb(rarmId,rarm,rHand,rArmOffset,rArmNormal, rArmx, rArmy, 10000, "manipulability", 0.05, "_6_DOF", True)
+fullBody.addLimb(rarmId,rarm,rHand,rArmOffset,rArmNormal, rArmx, rArmy, 10000, "manipulability", 0.05)
+
+
+#~ value [(2.22045e-16 1 -3.92523e-17)(1 2.22045e-16 3.92523e-17)(3.92523e-17 -3.92523e-17 -1)]
+#~ invvalue [(2.22045e-16 1 3.92523e-17)(1 2.22045e-16 -3.92523e-17)(-3.92523e-17 3.92523e-17 -1)]
+
+#~ value [0 1 0)(1 0 0)(0 0 -1)]
+#~ invvalue [(4.44089e-16 1 -1.17757e-16)(1 7.77156e-16 -1.96262e-16)(-1.96262e-16 -1.17757e-16 -1)]
+
 
 
 #~ AFTER loading obstacles
@@ -190,14 +199,14 @@ def genPlan(stepsize=0.1):
 	end = time.clock() 
 	print "Contact plan generated in " + str(end-start) + "seconds"
 	
-def contactPlan():
+def contactPlan(step = 0.5):
+	r.client.gui.setVisibility("hyq", "ON")
 	tp.cl.problem.selectProblem("default")
-	r.client.gui.setVisibility("hrp2_14", "ON")
 	tp.r.client.gui.setVisibility("toto", "OFF")
-	tp.r.client.gui.setVisibility("hrp2_trunk_flexible", "OFF")
-	for i in range(0,len(configs)-1):
+	tp.r.client.gui.setVisibility("hyq_trunk_large", "OFF")
+	for i in range(0,len(configs)):
 		r(configs[i]);
-		time.sleep(0.5)		
+		time.sleep(step)	
 		
 		
 def a():
@@ -216,10 +225,20 @@ def d(step=0.1):
 	print "computing contact plan"
 	genPlan(step)
 	
-def e():
+def e(step = 0.5):
 	print "displaying contact plan"
-	contactPlan()
-	
-print "Root path generated in " + str(tp.t) + " ms."
+	contactPlan(step)
 
-d(0.01); e()
+d(0.05); e(0.01)
+
+print "Root path generated in " + str(tp.t) + " ms."
+	
+#~ from gen_data_from_rbprm import *
+#~ 
+#~ for config in configs:
+	#~ r(config)
+	#~ print(fullBody.client.basic.robot.getComPosition())
+#~ 
+
+#~ gen_and_save(fullBody,configs, "stair_bauzil_contacts_data")
+#~ main()

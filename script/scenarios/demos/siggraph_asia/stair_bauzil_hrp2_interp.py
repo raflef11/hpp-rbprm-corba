@@ -204,6 +204,8 @@ def e(step = 0.5):
 	print "displaying contact plan"
 	contactPlan(step)
 
+fullBody.setMaxContactBreaks(2)
+
 d(0.1); e(0.01)
 
 print "Root path generated in " + str(tp.t) + " ms."

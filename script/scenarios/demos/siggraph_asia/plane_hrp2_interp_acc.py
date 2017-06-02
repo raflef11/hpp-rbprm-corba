@@ -2,7 +2,7 @@ from hpp.corbaserver.rbprm.rbprmbuilder import Builder
 from hpp.corbaserver.rbprm.rbprmfullbody import FullBody
 from hpp.gepetto import Viewer
 
-import stair_bauzil_hrp2_path as tp
+import plane_hrp2_path as tp
 import time
 
 
@@ -28,35 +28,26 @@ r = tp.Viewer (ps, viewerClient=tp.r.client)
 #~ AFTER loading obstacles
 rLegId = '0rLeg'
 rLeg = 'RLEG_JOINT0'
-rLegOffset = [0,0,-0.105]
-rLegNormal = [0,0,1]
+rLegOffset = [0,-0.105,0,]
+rLegNormal = [0,1,0]
 rLegx = 0.09; rLegy = 0.05
 fullBody.addLimb(rLegId,rLeg,'',rLegOffset,rLegNormal, rLegx, rLegy, 10000, "manipulability", 0.1)
-
-lLegId = '1lLeg'
-lLeg = 'LLEG_JOINT0'
-lLegOffset = [0,0,-0.105]
-lLegNormal = [0,0,1]
-lLegx = 0.09; lLegy = 0.05
+                                                                                                
+lLegId = '1lLeg'                                                                                
+lLeg = 'LLEG_JOINT0'                                                                            
+lLegOffset = [0,-0.105,0]                                                                       
+lLegNormal = [0,1,0]                                                                            
+lLegx = 0.09; lLegy = 0.05                                                                      
 fullBody.addLimb(lLegId,lLeg,'',lLegOffset,rLegNormal, lLegx, lLegy, 10000, "manipulability", 0.1)
 
 rarmId = '3Rarm'
 rarm = 'RARM_JOINT0'
 rHand = 'RARM_JOINT5'
-rArmOffset = [0,0,-0.1075]
+rArmOffset = [0,0,-0.1]
 rArmNormal = [0,0,1]
 rArmx = 0.024; rArmy = 0.024
 #disabling collision for hook
 #~ fullBody.addLimb(rarmId,rarm,rHand,rArmOffset,rArmNormal, rArmx, rArmy, 10000, "manipulability", 0.05, "_6_DOF", True)
-fullBody.addLimb(rarmId,rarm,rHand,rArmOffset,rArmNormal, rArmx, rArmy, 10000, "manipulability", 0.05)
-
-
-#~ value [(2.22045e-16 1 -3.92523e-17)(1 2.22045e-16 3.92523e-17)(3.92523e-17 -3.92523e-17 -1)]
-#~ invvalue [(2.22045e-16 1 3.92523e-17)(1 2.22045e-16 -3.92523e-17)(-3.92523e-17 3.92523e-17 -1)]
-
-#~ value [0 1 0)(1 0 0)(0 0 -1)]
-#~ invvalue [(4.44089e-16 1 -1.17757e-16)(1 7.77156e-16 -1.96262e-16)(-1.96262e-16 -1.17757e-16 -1)]
-
 
 
 #~ AFTER loading obstacles
@@ -99,7 +90,7 @@ q_goal = fullBody.getCurrentConfig(); q_goal[0:7] = tp.q_goal[0:7]
 
 fullBody.setCurrentConfig (q_init)
 q_init =  [
-        0.1, -0.82, 0.648702, 1.0, 0.0 , 0.0, 0.0,                         	 # Free flyer 0-6
+        0, -0.82, 0.58, 1.0, 0.0 , 0.0, 0.0,                         	 # Free flyer 0-6
         0.0, 0.0, 0.0, 0.0,                                                  # CHEST HEAD 7-10
         0.261799388,  0.174532925, 0.0, -0.523598776, 0.0, 0.0, 0.17, 		 # LARM       11-17
         0.261799388, -0.174532925, 0.0, -0.523598776, 0.0, 0.0, 0.17, 		 # RARM       18-24
@@ -110,10 +101,11 @@ q_init =  [
 fullBody.setCurrentConfig (q_goal)
 #~ r(q_goal)
 q_goal = fullBody.generateContacts(q_goal, [0,0,1])
+q_init = fullBody.generateContacts(q_init, [0,0,1])
 #~ r(q_goal)
 
 #~ fullBody.setStartState(q_init,[rLegId,lLegId,rarmId]) #,rarmId,larmId])
-fullBody.setStartState(q_init,[rLegId,lLegId]) #,rarmId,larmId])
+fullBody.setStartState(q_init,[lLegId,rLegId]) #,rarmId,larmId])
 fullBody.setEndState(q_goal,[rLegId,lLegId])#,rarmId,larmId])
 #~ 
 #~ configs = fullBody.interpolate(0.1)
@@ -122,7 +114,7 @@ i = 0;
 configs = []
 #~ fullBody.draw(configs[i],r); i=i+1; i-1
 
-r.loadObstacleModel ('hpp-rbprm-corba', "stair_bauzil", "contact")
+#~ r.loadObstacleModel ('hpp-rbprm-corba', "stair_bauzil", "contact")
 #~ fullBody.exportAll(r, configs, 'stair_bauzil_hrp2_robust_2');
 #~ fullBody.client.basic.robot.setJointConfig('LLEG_JOINT0',[-1])
 #~ q_0 = fullBody.getCurrentConfig(); 
@@ -195,7 +187,7 @@ def genPlan(stepsize=0.1):
 	tp.r.client.gui.setVisibility("hrp2_trunk_flexible", "OFF")
 	global configs
 	start = time.clock() 
-	configs = fullBody.interpolate(stepsize, 1, 2, False)
+	configs = fullBody.interpolate(stepsize, 1, 2, True)
 	end = time.clock() 
 	print "Contact plan generated in " + str(end-start) + "seconds"
 	
@@ -228,7 +220,9 @@ def d(step=0.1):
 def e(step = 0.5):
 	print "displaying contact plan"
 	contactPlan(step)
-
+	
+print "Root path generated in " + str(tp.t) + " ms."
+	
 d(0.05); e(0.01)
 
 print "Root path generated in " + str(tp.t) + " ms."
@@ -242,3 +236,147 @@ print "Root path generated in " + str(tp.t) + " ms."
 
 #~ gen_and_save(fullBody,configs, "stair_bauzil_contacts_data")
 #~ main()
+
+from gen_data_from_rbprm import *
+
+from hpp.corbaserver.rbprm.tools.com_constraints import get_com_constraint
+
+#computing com bounds 0 and 1
+def __get_com(robot, config):
+	save = robot.getCurrentConfig()
+	robot.setCurrentConfig(config)
+	com = robot.getCenterOfMass()
+	robot.setCurrentConfig(save)
+	return com
+
+from numpy import matrix, asarray
+from numpy.linalg import norm
+from spline import bezier
+
+
+def __curveToWps(curve):
+    return asarray(curve.waypoints().transpose()).tolist()
+
+
+def __Bezier(wps, init_acc = [0.,0.,0.], end_acc = [0.,0.,0.], init_vel = [0.,0.,0.], end_vel = [0.,0.,0.]):
+    c = curve_constraints();
+    c.init_vel = matrix(init_vel);
+    c.end_vel  = matrix(end_vel);
+    c.init_acc = matrix(init_acc);
+    c.end_acc  = matrix(end_acc);
+    matrix_bezier = matrix(wps).transpose()
+    return __curveToWps(bezier(matrix_bezier, c))
+    #~ return __curveToWps(bezier(matrix_bezier))
+
+allpaths = []
+
+def play_all_paths():
+    for _, pid in enumerate(allpaths):
+        pp(pid)
+
+def play_all_paths_smooth():
+    for i, pid in enumerate(allpaths):
+        if i % 2 == 1 :
+            pp(pid)
+            
+def play_all_paths_qs():
+    for i, pid in enumerate(allpaths):
+        if i % 2 == 0 :
+            pp(pid)
+
+def test(stateid = 1, path = False, use_rand = False, just_one_curve = False) :
+    com_1 = __get_com(fullBody, configs[stateid])
+    com_2 = __get_com(fullBody, configs[stateid+1])
+    data = gen_sequence_data_from_state(fullBody,stateid,configs)
+    c_bounds_1 = get_com_constraint(fullBody, stateid, configs[stateid], limbsCOMConstraints, interm = False)
+    c_bounds_mid = get_com_constraint(fullBody, stateid, configs[stateid], limbsCOMConstraints, interm = True)
+    c_bounds_2 = get_com_constraint(fullBody, stateid, configs[stateid+1], limbsCOMConstraints, interm = False)
+    success, c_mid_1, c_mid_2 = solve_quasi_static(data, c_bounds = [c_bounds_1, c_bounds_2, c_bounds_mid], use_rand = use_rand)
+    #~ success, c_mid_1, c_mid_2 = solve_dyn(data, c_bounds = [c_bounds_1, c_bounds_2, c_bounds_mid], use_rand = use_rand)
+    #~ success, c_mid_1, c_mid_2 = solve_dyn(data, c_bounds = [c_bounds_1, c_bounds_2])
+    
+    paths_ids = []
+    if path and success:
+        #~ fullBody.straightPath([c_mid_1[0].tolist(),c_mid_2[0].tolist()])
+        #~ fullBody.straightPath([c_mid_2[0].tolist(),com_2])
+        if just_one_curve:
+            bezier_0 = __Bezier([com_1,c_mid_1[0].tolist(),c_mid_2[0].tolist(),com_2], init_acc = [0.0,-20.,0.], end_acc = [0.0,0.,0.], init_vel = [1.,0.,0.], end_vel = [1.,0.,0.])
+        
+            p0 = fullBody.generateCurveTrajParts(bezier_0,[0.,0.1,0.9,1.])
+            print "p0", p0
+            #~ pp.displayPath(p0+1)
+            #~ pp.displayPath(p0+2)
+            pp.displayPath(p0)
+            paths_ids = [int(el) for el in fullBody.comRRTFromPos(stateid,p0+1,p0+2,p0+3)]
+            #~ paths_ids = [int(el) for el in fullBody.effectorRRT(stateid,p0+1,p0+2,p0+3)]
+        else:
+            bezier_0 = __Bezier([com_1,c_mid_1[0].tolist()]              , end_acc = c_mid_1[1].tolist() , end_vel = [0.,0.,0.])
+            bezier_1 = __Bezier([c_mid_1[0].tolist(),c_mid_2[0].tolist()], end_acc = c_mid_2[1].tolist(), init_acc = c_mid_1[1].tolist(), init_vel = [0.,0.,0.], end_vel = [0.,0.,0.])
+            bezier_2 = __Bezier([c_mid_2[0].tolist(),com_2]              , init_acc = c_mid_2[1].tolist(), init_vel = [0.,0.,0.])
+        
+            p0 = fullBody.generateCurveTraj(bezier_0)
+            print "p0", p0
+            fullBody.generateCurveTraj(bezier_1)
+            fullBody.generateCurveTraj(bezier_2)
+            pp.displayPath(p0)
+            pp.displayPath(p0+1)
+            pp.displayPath(p0+2)
+            paths_ids = [int(el) for el in fullBody.comRRTFromPos(stateid,p0,p0+1,p0+2)]
+        #~ paths_ids = []
+        global allpaths
+        allpaths += paths_ids[:-1]
+        #~ pp(paths_ids[-1])
+    
+        #~ return success, paths_ids, c_mid_1, c_mid_2
+    return success, c_mid_1, c_mid_2, paths_ids
+data = gen_sequence_data_from_state(fullBody,3,configs)
+
+
+
+def prepare_whole_interp(stateid, stateid_end):
+	all_points = []
+	allSuc = True
+	for i in range(stateid, stateid_end):
+		com_1 = __get_com(fullBody, configs[stateid])
+		success, c_mid_1, c_mid_2, paths_ids = test(i, False, True, False)
+		allSuc = success and allSuc
+		if not success:
+			break
+		all_points = all_points + [com_1, c_mid_1[0].tolist(), c_mid_2[0].tolist()]
+	all_points = all_points + [__get_com(fullBody, configs[stateid_end])]
+	if allSuc:
+		bezier_0 = __Bezier(all_points)
+		p0 = fullBody.generateCurveTraj(bezier_0)
+		pp.displayPath(p0)
+		num_paths = stateid_end - stateid
+		num_sub_paths = num_paths * 3
+		increment = 1. / float(num_paths)
+		partitions = [0.]
+		for i in range(0, num_paths):
+			dec = increment * float(i)
+			partitions += [dec + 0.01 * increment, dec + 0.99 * increment,dec + 1. * increment]
+		print "partitions", partitions, len(partitions)
+		p0 = fullBody.generateCurveTrajParts(bezier_0,partitions) +1
+		paths_ids = []
+		for i in range(0, num_paths):
+			print "***************************3i", p0+3*i
+			paths_ids += [int(el) for el in fullBody.comRRTFromPos(stateid + i,p0+3*i,p0+3*i+1,p0+3*i+2)]
+        #~ paths_ids = []
+			global allpaths
+			allpaths += paths_ids[:-1]
+			#~ pp(paths_ids[-1])
+#~ success, paths_ids, c_mid_1, c_mid_2 = test(0, True, True, False)
+#~ prepare_whole_interp(1, 2)
+test(0, True, True, True)
+#~ test(1, True, True, False)
+test(1, True, True, True)
+#~ test(2, True, True, False)
+test(2, True, True, True)
+#~ test(3, True, True, False)
+test(3, True, True, True)
+
+#~ pp(29),pp(9),pp(17)
+
+from hpp.corbaserver.rbprm.tools.path_to_trajectory import *
+a = gen_trajectory_to_play(fullBody, pp, allpaths, flatten([[0.1, 0.9, 0.1] for _ in range(len(allpaths) / 3)]))
+#~ play_trajectory(fullBody,pp,a)

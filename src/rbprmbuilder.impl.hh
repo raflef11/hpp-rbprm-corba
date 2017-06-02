@@ -146,21 +146,27 @@ namespace hpp {
 
         virtual void addLimb(const char* id, const char* limb, const char* effector, const hpp::floatSeq& offset, const hpp::floatSeq& normal, double x, double y,
                              unsigned short samples, const char *heuristicName, double resolution, const char *contactType,
-                             double disableEffectorCollision) throw (hpp::Error);
+                             double disableEffectorCollision, double grasp) throw (hpp::Error);
         virtual void addLimbDatabase(const char* databasePath, const char* id, const char* heuristicName, double loadValues,
-                                     double disableEffectorCollision) throw (hpp::Error);
+                                     double disableEffectorCollision, double grasp) throw (hpp::Error);
 
         virtual void setStartState(const hpp::floatSeq& configuration, const hpp::Names_t& contactLimbs) throw (hpp::Error);
         virtual void setEndState(const hpp::floatSeq& configuration, const hpp::Names_t& contactLimbs) throw (hpp::Error);
         virtual hpp::floatSeq*  computeContactForConfig(const hpp::floatSeq& configuration, const char* limbNam) throw (hpp::Error);
         virtual hpp::floatSeqSeq* computeContactPoints(unsigned short cId) throw (hpp::Error);
+        virtual hpp::floatSeqSeq* computeContactPointsAtState(unsigned short cId, unsigned short isIntermediate) throw (hpp::Error);
         virtual hpp::floatSeqSeq* computeContactPointsForLimb(unsigned short cId, const char* limbName) throw (hpp::Error);
+        virtual hpp::floatSeqSeq* computeContactPointsAtStateForLimb(unsigned short cId, unsigned short isIntermediate, const char* limbName) throw (hpp::Error);
         virtual hpp::floatSeqSeq* interpolate(double timestep, double path, double robustnessTreshold, unsigned short filterStates) throw (hpp::Error);
         virtual hpp::floatSeqSeq* interpolateConfigs(const hpp::floatSeqSeq& configs, double robustnessTreshold, unsigned short filterStates) throw (hpp::Error);
         virtual hpp::floatSeqSeq* getContactCone(unsigned short stateId, double friction) throw (hpp::Error);
         virtual hpp::floatSeqSeq* getContactIntermediateCone(unsigned short stateId, double friction) throw (hpp::Error);
         virtual CORBA::Short generateComTraj(const hpp::floatSeqSeq& positions, const hpp::floatSeqSeq& velocities,
                                              const hpp::floatSeqSeq& accelerations, const double dt) throw (hpp::Error);
+
+        virtual CORBA::Short straightPath(const hpp::floatSeqSeq& positions) throw (hpp::Error);
+        virtual CORBA::Short generateCurveTraj(const hpp::floatSeqSeq& positions) throw (hpp::Error);
+        virtual CORBA::Short generateCurveTrajParts(const hpp::floatSeqSeq& positions, const hpp::floatSeq& partitions) throw (hpp::Error);
         virtual CORBA::Short generateRootPath(const hpp::floatSeqSeq& rootPositions,
                                       const hpp::floatSeq& q1, const hpp::floatSeq& q2) throw (hpp::Error);
         virtual CORBA::Short limbRRT(double state1, double state2, unsigned short numOptimizations) throw (hpp::Error);
@@ -172,11 +178,16 @@ namespace hpp {
             (RbPrmFullBodyPtr_t, core::ProblemPtr_t, const core::PathPtr_t,
              const  State &, const State &, const  std::size_t, const bool);
 
-        hpp::floatSeq* rrt(t_rrt functor ,double state1,
+        hpp::floatSeq* rrt(t_rrt functor ,double state1,double state2,
                            unsigned short comTraj1, unsigned short comTraj2, unsigned short comTraj3,
                            unsigned short numOptimizations) throw (hpp::Error);
 
         virtual hpp::floatSeq* comRRTFromPos(double state1,
+                                           unsigned short comTraj1,
+                                           unsigned short comTraj2,
+                                           unsigned short comTraj3,
+                                           unsigned short numOptimizations) throw (hpp::Error);
+        virtual hpp::floatSeq* comRRTFromPosBetweenState(double state1,double state2,
                                            unsigned short comTraj1,
                                            unsigned short comTraj2,
                                            unsigned short comTraj3,
@@ -195,16 +206,18 @@ namespace hpp {
                                            unsigned short comTraj3,
                                            unsigned short numOptimizations,
                                            const hpp::Names_t& trackedEffectors) throw (hpp::Error);
-        virtual hpp::floatSeq* projectToCom(double state, const hpp::floatSeq& targetCom) throw (hpp::Error);
+        virtual hpp::floatSeq* projectToCom(double state, const hpp::floatSeq& targetCom, unsigned short max_num_sample) throw (hpp::Error);
         virtual CORBA::Short createState(const hpp::floatSeq& configuration, const hpp::Names_t& contactLimbs) throw (hpp::Error);
         virtual hpp::floatSeq* getConfigAtState(unsigned short stateId) throw (hpp::Error);
-        double projectStateToCOMEigen(unsigned short stateId, const model::Configuration_t& com_target)throw (hpp::Error);
-        virtual double projectStateToCOM(unsigned short stateId, const hpp::floatSeq& com) throw (hpp::Error);
+        virtual double setConfigAtState(unsigned short stateId, const hpp::floatSeq& config) throw (hpp::Error);
+        double projectStateToCOMEigen(unsigned short stateId, const model::Configuration_t& com_target, unsigned short maxNumeSamples)throw (hpp::Error);
+        virtual double projectStateToCOM(unsigned short stateId, const hpp::floatSeq& com, unsigned short max_num_sample) throw (hpp::Error);
         virtual void saveComputedStates(const char* filepath) throw (hpp::Error);
         virtual void saveLimbDatabase(const char* limbname,const char* filepath) throw (hpp::Error);
         virtual hpp::floatSeq* getOctreeBox(const char* limbName, double sampleId) throw (hpp::Error);
         virtual CORBA::Short  isLimbInContact(const char* limbName, double state) throw (hpp::Error);
         virtual CORBA::Short  isLimbInContactIntermediary(const char* limbName, double state) throw (hpp::Error);
+        virtual CORBA::Short  computeIntermediary(unsigned short state1, unsigned short state2) throw (hpp::Error);
         virtual hpp::floatSeqSeq* getOctreeBoxes(const char* limbName, const hpp::floatSeq& configuration) throw (hpp::Error);
         virtual hpp::floatSeq* getOctreeTransform(const char* limbName, const hpp::floatSeq& configuration) throw (hpp::Error);
         virtual CORBA::Short isConfigBalanced(const hpp::floatSeq& config, const hpp::Names_t& contactLimbs, double robustnessTreshold) throw (hpp::Error);
@@ -212,6 +225,10 @@ namespace hpp {
         virtual void runSampleAnalysis(const char* analysis, double isstatic) throw (hpp::Error);
         virtual hpp::floatSeq* runLimbSampleAnalysis(const char* limbname, const char* analysis, double isstatic) throw (hpp::Error);
         virtual void dumpProfile(const char* logFile) throw (hpp::Error);
+        virtual CORBA::Short addNewContact(unsigned short stateId, const char* limbName,
+                                            const hpp::floatSeq& position, const hpp::floatSeq& normal, unsigned short max_num_sample) throw (hpp::Error);
+        virtual CORBA::Short removeContact(unsigned short stateId, const char* limbName) throw (hpp::Error);
+        virtual hpp::floatSeq* computeTargetTransform(const char* limbName, const hpp::floatSeq& configuration, const hpp::floatSeq& p, const hpp::floatSeq& n) throw (hpp::Error);
 
         virtual void setMaxContactBreaks(unsigned short maxContactBreaks) throw (hpp::Error);
         virtual void addRequiredLimb(const char * limb) throw (hpp::Error);

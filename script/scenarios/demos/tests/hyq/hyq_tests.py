@@ -5,6 +5,7 @@ from hpp.corbaserver.rbprm.rbprmbuilder import Builder
 from hpp.corbaserver.affordance.affordance import AffordanceTool
 from hyq_ref_pose import hyq_ref
 import toolbox as tools
+import hpp.corbaserver.rbprm.state_alg as state_alg
 
 rootJointType = "freeflyer"
 urdfSuffix = ""

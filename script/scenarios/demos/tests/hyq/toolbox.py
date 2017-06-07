@@ -720,10 +720,10 @@ class PointCloudsManager:
 # @param [In] comAccel The center of mass acceleration
 # @param [In] g The gravity acceleration, default value: -9.80665 m.s-1
 #
-# @ return the ZMP position (2D)
+# @return the ZMP position (2D)
 def findZMP(comPos, comAccel, g = -9.80665):
-	x_zmp = comPos[0] - (comPos[2]/g)*comAccel[0]
-	y_zmp = comPos[1] - (comPos[2]/g)*comAccel[1]
+	x_zmp = comPos[0] - (comPos[2]/(g + comAccel[2]))*comAccel[0]
+	y_zmp = comPos[1] - (comPos[2]/(g + comAccel[2]))*comAccel[1]
 	return [x_zmp, y_zmp]
 
 ## ISVALIDZMP
@@ -738,8 +738,8 @@ def findZMP(comPos, comAccel, g = -9.80665):
 # @return True if the criterion is validated, False otherwise
 def isValidZMP(convexHull, comPos, comAccel, g = -9.80665):
 	# determine the ZMP position
-	x_zmp = comPos[0] - (comPos[2]/g)*comAccel[0]
-	y_zmp = comPos[1] - (comPos[2]/g)*comAccel[1]
+	x_zmp = comPos[0] - (comPos[2]/(g + comAccel[2]))*comAccel[0]
+	y_zmp = comPos[1] - (comPos[2]/(g + comAccel[2]))*comAccel[1]
 
 	# return if the ZMP is inside the convex hull of the support polygon (equilibrium for planar contacts) or not (fall)
 	return isInside([x_zmp, y_zmp], convexHull)
@@ -755,8 +755,8 @@ def isValidZMP(convexHull, comPos, comAccel, g = -9.80665):
 # @return The cost of the current contact configuration
 def evalZMP(convexHull, comPos, comAccel, g = -9.80665):
 	# determine the ZMP position
-	x_zmp = comPos[0] - (comPos[2]/g)*comAccel[0]
-	y_zmp = comPos[1] - (comPos[2]/g)*comAccel[1]
+	x_zmp = comPos[0] - (comPos[2]/(g + comAccel[2]))*comAccel[0]
+	y_zmp = comPos[1] - (comPos[2]/(g + comAccel[2]))*comAccel[1]
 	zmp = [x_zmp, y_zmp]
 
 	# get the center (approximation of the real center) of the convex hull of the support polygon (CHSP)

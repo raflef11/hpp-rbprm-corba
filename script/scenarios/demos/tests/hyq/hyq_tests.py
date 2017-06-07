@@ -370,14 +370,14 @@ def mgiq3test(prefix, q1, q2, XworldDes, epsi1, epsi2):
 	print str(q3_eq7) + " -- " + str(q3_eq1)
 '''
 
-def testAddNewContact(prefix, choice = 0):
+def testAddNewContact(prefix):
 	import time
 
 	prefixes = ["lh", "lf", "rh", "rf"]
 	if prefix not in prefixes:
 		return "Not a valid prefix"
 
-	print "ready to begin:"
+	print "------ ready to begin..."
 	raw_input()
 	print "Orientate the robot along the horizontal plan..."
 	time.sleep(1.0)
@@ -388,10 +388,7 @@ def testAddNewContact(prefix, choice = 0):
 
 	s = state_alg.State(fullbody, -1, False, fullbody.getCurrentConfig())
 
-	if choice == 0:
-		pos = fullbody.getJointPosition(prefix + "_foot_joint")[0:3]
-	else:
-		pos = Hyq.getJointPosition(prefix, "foot")[0:3]
+	pos = fullbody.getJointPosition(prefix + "_foot_joint")[0:3]
 
 	pos[0] += 0.2
 	n = [0, 0, 1]
@@ -405,7 +402,41 @@ def testAddNewContact(prefix, choice = 0):
 		print "failed to add new contact"
 	print "after:"
 	print fullbody.getCurrentConfig()
-	print "ready to update the gui:"
+	print "------ ready to update the gui..."
 	raw_input()
 	r(fullbody.getCurrentConfig())
 	print "------ finished"
+
+def testAllContacts():
+	q = q_init[:]
+	q[3:7] = tools.buildQuaternion([0, 0, 1], 0, tools.AngleEnum.DEGREES)
+	r(q)
+
+	n = [0, 0, 1]
+
+	# lh
+	slh = state_alg.State(fullbody, -1, False, fullbody.getCurrentConfig())
+	pos = fullbody.getJointPosition("lh_foot_joint")[0:3]
+	slf, success = state_alg.addNewContact(slh, "lhleg", pos, n)
+	if not success:
+		print "failed to add lh contact"
+
+	# lf
+	pos = fullbody.getJointPosition("lf_foot_joint")[0:3]
+	srf, success = state_alg.addNewContact(slf, "lfleg", pos, n)
+	if not success:
+		print "failed to add lf contact"
+
+	# rf
+	pos = fullbody.getJointPosition("rf_foot_joint")[0:3]
+	srh, success = state_alg.addNewContact(srf, "rfleg", pos, n)
+	if not success:
+		print "failed to add rf contact"
+
+	# rh
+	pos = fullbody.getJointPosition("rf_foot_joint")[0:3]
+	ends, success = state_alg.addNewContact(srh, "rfleg", pos, n)
+	if not success:
+		print "failed to add rf contact"
+
+	r(fullbody.getCurrentConfig())

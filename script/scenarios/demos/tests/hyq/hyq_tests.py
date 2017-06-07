@@ -440,3 +440,5 @@ def testAllContacts():
 		print "failed to add rh contact"
 
 	r(fullbody.getCurrentConfig())
+
+	return ends

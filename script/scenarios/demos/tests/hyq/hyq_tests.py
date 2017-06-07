@@ -405,11 +405,12 @@ def testAllContacts(q = q_init[:]):
 	return end_s
 '''
 
-def testZMP(convexHSuppPolygon, centerOfMass, acceleration):
+def testZMP(convexHSuppPolygon, centerOfMass, acceleration, display = False):
 	stable = tools.isValidZMP(convexHSuppPolygon, centerOfMass, acceleration)
 	cost = tools.evalZMP(convexHSuppPolygon, centerOfMass, acceleration)
-	print "Stable ? " + str(stable)
-	print "Cost : " + str(cost)
+	if display:
+		print "Stable ? " + str(stable)
+		print "Cost : " + str(cost)
 	return stable, cost
 
 print ""
@@ -433,7 +434,24 @@ chsp = tools.PointCloudsManager.convexHull2D(suppoly)
 
 CoM = fullbody.client.basic.robot.getComPosition()
 
-### --- ZMP test examples ---
-### accel = [1.7, -1.2, 0.0]; testZMP(chsp, CoM, accel)
-### --- or more simply ---
-### testZMP(chsp, CoM, [1.7, -1.2, 0.0])
+# ---
+
+pas = -0.01
+
+base_x_accel = 0.0
+cost = testZMP(chsp, CoM, [base_x_accel, 0.0, 0.0])
+optim_x_accel = base_x_accel + pas
+next_cost = testZMP(chsp, CoM, [optim_x_accel, 0.0, 0.0])
+while next_cost <= cost:
+	cost = next_cost
+	optim_x_accel += pas
+	next_cost = testZMP(chsp, CoM, [optim_x_accel, 0.0, 0.0])
+
+base_y_accel = 0.0
+cost = testZMP(chsp, CoM, [0.0, base_y_accel, 0.0])
+optim_y_accel = base_y_accel + pas
+next_cost = testZMP(chsp, CoM, [0.0, optim_y_accel, 0.0])
+while next_cost <= cost:
+	cost = next_cost
+	optim_y_accel += pas
+	next_cost = testZMP(chsp, CoM, [0.0, optim_y_accel, 0.0])

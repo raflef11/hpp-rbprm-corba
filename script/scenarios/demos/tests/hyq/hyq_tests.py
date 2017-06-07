@@ -368,47 +368,8 @@ def mgiq3test(prefix, q1, q2, XworldDes, epsi1, epsi2):
 	print "epsi1 : " + str(epsi1)
 	print "epsi2 : " + str(epsi2)
 	print str(q3_eq7) + " -- " + str(q3_eq1)
-'''
 
-def testAddNewContact(prefix):
-	import time
-
-	prefixes = ["lh", "lf", "rh", "rf"]
-	if prefix not in prefixes:
-		return "Not a valid prefix"
-
-	print "------ ready to begin..."
-	raw_input()
-	print "Orientate the robot along the horizontal plan..."
-	time.sleep(1.0)
-
-	q = q_init[:]
-	q[3:7] = tools.buildQuaternion([0, 0, 1], 0, tools.AngleEnum.DEGREES)
-	r(q)
-
-	s = state_alg.State(fullbody, -1, False, fullbody.getCurrentConfig())
-
-	pos = fullbody.getJointPosition(prefix + "_foot_joint")[0:3]
-
-	pos[0] += 0.2
-	n = [0, 0, 1]
-
-	print "before:"
-	print fullbody.getCurrentConfig()
-	print "add new contact..."
-	time.sleep(1.0)
-	_, success = state_alg.addNewContact(s, prefix + "leg", pos, n)
-	if not success:
-		print "failed to add new contact"
-	print "after:"
-	print fullbody.getCurrentConfig()
-	print "------ ready to update the gui..."
-	raw_input()
-	r(fullbody.getCurrentConfig())
-	print "------ finished"
-
-def testAllContacts():
-	q = q_init[:]
+def testAllContacts(q = q_init[:]):
 	q[3:7] = tools.buildQuaternion([0, 0, 1], 0, tools.AngleEnum.DEGREES)
 	r(q)
 
@@ -435,22 +396,28 @@ def testAllContacts():
 
 	# rh
 	pos = fullbody.getJointPosition("rh_foot_joint")[0:3]
-	ends, success = state_alg.addNewContact(srh, "rhleg", pos, n)
+	end_s, success = state_alg.addNewContact(srh, "rhleg", pos, n)
 	if not success:
 		print "failed to add rh contact"
 
 	r(fullbody.getCurrentConfig())
 
-	return ends
+	return end_s
+'''
 
 def testZMP(convexHSuppPolygon, centerOfMass, acceleration):
-	print "Stable ? " + str(tools.isValidZMP(convexHSuppPolygon, centerOfMass, acceleration))
-	print "Cost : " + str(tools.evalZMP(convexHSuppPolygon, centerOfMass, acceleration))
+	stable = tools.isValidZMP(convexHSuppPolygon, centerOfMass, acceleration)
+	cost = tools.evalZMP(convexHSuppPolygon, centerOfMass, acceleration)
+	print "Stable ? " + str(stable)
+	print "Cost : " + str(cost)
+	return stable, cost
 
+print ""
 print "---"
 print ""
 
-s = testAllContacts()
+q = q_init[:]
+q[7] += 0.3; q[10] += 0.3; q[13] -= 0.3; q[16] -= 0.3; r(q)
 
 pos = []
 pos.append(fullbody.getJointPosition("lh_foot_joint")[0:3])
@@ -464,7 +431,7 @@ for p in pos:
 
 chsp = tools.PointCloudsManager.convexHull2D(suppoly)
 
-CoM = s.getCenterOfMass()
+CoM = fullbody.client.basic.robot.getComPosition()
 
 ### --- ZMP test examples ---
 ### accel = [1.7, -1.2, 0.0]; testZMP(chsp, CoM, accel)

@@ -442,3 +442,31 @@ def testAllContacts():
 	r(fullbody.getCurrentConfig())
 
 	return ends
+
+def testZMP(convexHSuppPolygon, centerOfMass, acceleration):
+	print "Stable ? " + str(tools.isValidZMP(convexHSuppPolygon, centerOfMass, acceleration))
+	print "Cost : " + str(tools.evalZMP(convexHSuppPolygon, centerOfMass, acceleration))
+
+print "---"
+print ""
+
+s = testAllContacts()
+
+pos = []
+pos.append(fullbody.getJointPosition("lh_foot_joint")[0:3])
+pos.append(fullbody.getJointPosition("lf_foot_joint")[0:3])
+pos.append(fullbody.getJointPosition("rf_foot_joint")[0:3])
+pos.append(fullbody.getJointPosition("rh_foot_joint")[0:3])
+
+suppoly = []
+for p in pos:
+	suppoly.append(tools.orthogonalProjection(p, [0, 0, 1, 0])[0:2])
+
+chsp = tools.PointCloudsManager.convexHull2D(suppoly)
+
+CoM = s.getCenterOfMass()
+
+### --- ZMP test examples ---
+### accel = [1.7, -1.2, 0.0]; testZMP(chsp, CoM, accel)
+### --- or more simply ---
+### testZMP(chsp, CoM, [1.7, -1.2, 0.0])

@@ -434,9 +434,9 @@ def testAllContacts():
 		print "failed to add rf contact"
 
 	# rh
-	pos = fullbody.getJointPosition("rf_foot_joint")[0:3]
-	ends, success = state_alg.addNewContact(srh, "rfleg", pos, n)
+	pos = fullbody.getJointPosition("rh_foot_joint")[0:3]
+	ends, success = state_alg.addNewContact(srh, "rhleg", pos, n)
 	if not success:
-		print "failed to add rf contact"
+		print "failed to add rh contact"
 
 	r(fullbody.getCurrentConfig())

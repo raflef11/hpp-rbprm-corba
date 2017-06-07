@@ -184,6 +184,7 @@ class Hyq:
 # Work in progress zone
 # ---------------------
 
+'''
 # MGI of Hyq
 def HyqMGI(prefix):
 	pass
@@ -226,10 +227,13 @@ def transformXworldToX0(prefix, Xworld):
 def setEndEffectorPosition(name, pos):
 	pass
 
+'''
+
 # ----------
 # Tests zone
 # ----------
 
+'''
 # Test MGD Hyq
 def testMGD(prefix):
 	prefixes = ["lh", "lf", "rh", "rf"]
@@ -364,3 +368,44 @@ def mgiq3test(prefix, q1, q2, XworldDes, epsi1, epsi2):
 	print "epsi1 : " + str(epsi1)
 	print "epsi2 : " + str(epsi2)
 	print str(q3_eq7) + " -- " + str(q3_eq1)
+'''
+
+def testAddNewContact(prefix, choice = 0):
+	import time
+
+	prefixes = ["lh", "lf", "rh", "rf"]
+	if prefix not in prefixes:
+		return "Not a valid prefix"
+
+	print "ready to begin:"
+	raw_input()
+	print "Orientate the robot along the horizontal plan..."
+	time.sleep(1.0)
+
+	q = q_init[:]
+	q[3:7] = tools.buildQuaternion([0, 0, 1], 0, tools.AngleEnum.DEGREES)
+	r(q)
+
+	s = state_alg.State(fullbody, -1, False, fullbody.getCurrentConfig())
+
+	if choice == 0:
+		pos = fullbody.getJointPosition(prefix + "_foot_joint")[0:3]
+	else:
+		pos = Hyq.getJointPosition(prefix, "foot")[0:3]
+
+	pos[0] += 0.2
+	n = [0, 0, 1]
+
+	print "before:"
+	print fullbody.getCurrentConfig()
+	print "add new contact..."
+	time.sleep(1.0)
+	_, success = state_alg.addNewContact(s, prefix + "leg", pos, n)
+	if not success:
+		print "failed to add new contact"
+	print "after:"
+	print fullbody.getCurrentConfig()
+	print "ready to update the gui:"
+	raw_input()
+	r(fullbody.getCurrentConfig())
+	print "------ finished"

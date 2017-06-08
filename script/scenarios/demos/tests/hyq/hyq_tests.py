@@ -116,6 +116,24 @@ class Hyq:
 			prefix = prefixes[2]
 		return fullbody.getJointPosition(prefix + "_" + name + "_joint")
 
+	@staticmethod
+	def getCoM():
+		return fullbody.client.basic.robot.getCenterOfMass()[:]
+
+	@staticmethod
+	def getCHSP():
+		pos = []
+		pos.append(fullbody.getJointPosition("lh_foot_joint")[0:3])
+		pos.append(fullbody.getJointPosition("lf_foot_joint")[0:3])
+		pos.append(fullbody.getJointPosition("rf_foot_joint")[0:3])
+		pos.append(fullbody.getJointPosition("rh_foot_joint")[0:3])
+
+		suppoly = []
+		for p in pos:
+			suppoly.append(tools.orthogonalProjection(p, [0, 0, 1, 0])[0:2])
+
+		return tools.PointCloudsManager.convexHull2D(suppoly)
+
 # -----
 # Tests
 # -----
@@ -128,23 +146,49 @@ def testZMP(convexHSuppPolygon, centerOfMass, acceleration, display = False):
 		print "Cost : " + str(cost)
 	return stable, cost
 
+def scenarioTestZMP():
+	import time
+
+	print "Ready to begin..."
+	raw_input()
+
+	accel = [1.0, 0.0, 0.0]
+	print "Constant acceleration considered for this scenario : " + str(accel) + "\n"
+	time.sleep(1.0)
+
+	q = q_init[:]
+	q[0:3] = [-2.0, 0.0, 0.59]
+	q[3:7] = tools.buildQuaternion([0.0, 0.0, 1.0], 0.0, tools.AngleEnum.DEGREES)
+	q[7] = q[10] = q[13] = q[16] = 0.0
+	q[8] = q[11] = q[14] = q[17] = 0.4
+	q[9] = q[12] = q[15] = q[18] = 0.7
+
+	print "--- Base configuration:"
+	r(q)
+	testZMP(Hyq.getCHSP(), Hyq.getCoM(), accel, True)
+
+	print "Press --> Enter <-- to continue..."
+	raw_input()
+
+	q[14] = -1.0
+	q[15] = 1.58
+
+	print "--- Transitional configuration:"
+	r(q)
+	testZMP(Hyq.getCHSP(), Hyq.getCoM(), accel, True)
+
+	print "Press --> Enter <-- to continue..."
+	raw_input()
+
+	q[8] = -1.0
+	q[9] = 1.58
+
+	print "--- Final configuration:"
+	r(q)
+	testZMP(Hyq.getCHSP(), Hyq.getCoM(), accel, True)
+
+	print "--- Finished ---"
+
 print ""
 print "---"
 print ""
-
-q = q_init[:]
-q[7] += 0.3; q[10] += 0.3; q[13] -= 0.3; q[16] -= 0.3; r(q)
-
-pos = []
-pos.append(fullbody.getJointPosition("lh_foot_joint")[0:3])
-pos.append(fullbody.getJointPosition("lf_foot_joint")[0:3])
-pos.append(fullbody.getJointPosition("rf_foot_joint")[0:3])
-pos.append(fullbody.getJointPosition("rh_foot_joint")[0:3])
-
-suppoly = []
-for p in pos:
-	suppoly.append(tools.orthogonalProjection(p, [0, 0, 1, 0])[0:2])
-
-chsp = tools.PointCloudsManager.convexHull2D(suppoly)
-
-CoM = fullbody.client.basic.robot.getComPosition()

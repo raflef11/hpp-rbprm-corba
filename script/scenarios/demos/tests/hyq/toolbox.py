@@ -722,8 +722,23 @@ class PointCloudsManager:
 #
 # @return the ZMP position (2D)
 def findZMP(comPos, comAccel, g = -9.80665):
-	x_zmp = comPos[0] - (comPos[2]/(g + comAccel[2]))*comAccel[0]
-	y_zmp = comPos[1] - (comPos[2]/(g + comAccel[2]))*comAccel[1]
+	zAccel = g + comAccel[2]
+	epsi = 0.000000001
+
+	# if the z-forces are in balance
+	if abs(zAccel) <= epsi: # zAccel == 0
+		x_zmp = 0; y_zmp = 0
+		if abs(comAccel[0]) <= epsi: # (comAccel[0] == 0)
+			x_zmp = float("NaN")
+		else:
+			x_zmp = float("Inf")
+		if abs(comAccel[1]) <= epsi: # (comAccel[1] == 0)
+			y_zmp = float("NaN")
+		else:
+			y_zmp = float("Inf")
+	else: # if z-forces not in balance
+		x_zmp = comPos[0] - (comPos[2]/zAccel)*comAccel[0]
+		y_zmp = comPos[1] - (comPos[2]/zAccel)*comAccel[1]
 	return [x_zmp, y_zmp]
 
 ## ISVALIDZMP
@@ -737,9 +752,19 @@ def findZMP(comPos, comAccel, g = -9.80665):
 #
 # @return True if the criterion is validated, False otherwise
 def isValidZMP(convexHull, comPos, comAccel, g = -9.80665):
+	zAccel = g + comAccel[2]
+	epsi = 0.000000001
+
+	# if the z-forces are in balance
+	if abs(zAccel) <= epsi: # zAccel == 0
+		if (abs(comAccel[0]) > epsi) or (abs(comAccel[1]) > epsi): # (comAccel[0] != 0) or (comAccel[1] != 0)
+			return False
+		else:
+			return True
+
 	# determine the ZMP position
-	x_zmp = comPos[0] - (comPos[2]/(g + comAccel[2]))*comAccel[0]
-	y_zmp = comPos[1] - (comPos[2]/(g + comAccel[2]))*comAccel[1]
+	x_zmp = comPos[0] - (comPos[2]/zAccel)*comAccel[0]
+	y_zmp = comPos[1] - (comPos[2]/zAccel)*comAccel[1]
 
 	# return if the ZMP is inside the convex hull of the support polygon (equilibrium for planar contacts) or not (fall)
 	return isInside([x_zmp, y_zmp], convexHull)
@@ -754,9 +779,19 @@ def isValidZMP(convexHull, comPos, comAccel, g = -9.80665):
 #
 # @return The cost of the current contact configuration
 def evalZMP(convexHull, comPos, comAccel, g = -9.80665):
+	zAccel = g + comAccel[2]
+	epsi = 0.000000001
+
+	# if the z-forces are in balance
+	if abs(zAccel) <= epsi: # zAccel == 0
+		if (abs(comAccel[0]) > epsi) or (abs(comAccel[1]) > epsi): # (comAccel[0] != 0) or (comAccel[1] != 0)
+			return float("Inf")
+		else:
+			return 0.0
+
 	# determine the ZMP position
-	x_zmp = comPos[0] - (comPos[2]/(g + comAccel[2]))*comAccel[0]
-	y_zmp = comPos[1] - (comPos[2]/(g + comAccel[2]))*comAccel[1]
+	x_zmp = comPos[0] - (comPos[2]/zAccel)*comAccel[0]
+	y_zmp = comPos[1] - (comPos[2]/zAccel)*comAccel[1]
 	zmp = [x_zmp, y_zmp]
 
 	# get the center (approximation of the real center) of the convex hull of the support polygon (CHSP)

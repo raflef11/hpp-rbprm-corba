@@ -146,13 +146,12 @@ def testZMP(convexHSuppPolygon, centerOfMass, acceleration, display = False):
 		print "Cost : " + str(cost)
 	return stable, cost
 
-def scenarioTestZMP():
+def scenarioTestZMP(accel = [0.0, 0.0, 0.0]):
 	import time
 
 	print "Ready to begin..."
 	raw_input()
 
-	accel = [1.0, 0.0, 0.0]
 	print "Constant acceleration considered for this scenario : " + str(accel) + "\n"
 	time.sleep(1.0)
 
@@ -182,6 +181,26 @@ def scenarioTestZMP():
 
 	q[8] = -1.0
 	q[9] = 1.58
+
+	print "--- Middle configuration:"
+	r(q)
+	testZMP(Hyq.getCHSP(), Hyq.getCoM(), accel, True)
+
+	print "Press --> Enter <-- to continue..."
+	raw_input()
+
+	q[17] = -0.3
+	q[18] = 1.44
+
+	print "--- Transitional configuration:"
+	r(q)
+	testZMP(Hyq.getCHSP(), Hyq.getCoM(), accel, True)
+
+	print "Press --> Enter <-- to continue..."
+	raw_input()
+
+	q[11] = -0.3
+	q[12] = 1.44
 
 	print "--- Final configuration:"
 	r(q)

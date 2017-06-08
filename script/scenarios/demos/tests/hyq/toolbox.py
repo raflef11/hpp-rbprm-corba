@@ -725,20 +725,17 @@ def findZMP(comPos, comAccel, g = -9.80665):
 	zAccel = g + comAccel[2]
 	epsi = 0.000000001
 
+	x_zmp = 0; y_zmp = 0 # init values
+
 	# if the z-forces are in balance
 	if abs(zAccel) <= epsi: # zAccel == 0
-		x_zmp = 0; y_zmp = 0
-		if abs(comAccel[0]) <= epsi: # (comAccel[0] == 0)
-			x_zmp = float("NaN")
-		else:
-			x_zmp = float("Inf")
-		if abs(comAccel[1]) <= epsi: # (comAccel[1] == 0)
-			y_zmp = float("NaN")
-		else:
-			y_zmp = float("Inf")
+		x_zmp = float("NaN") if (abs(comAccel[0]) <= epsi) else float("Inf") # NaN if comAccel[0] == 0, Inf otherwise
+		y_zmp = float("NaN") if (abs(comAccel[1]) <= epsi) else float("Inf") # NaN if comAccel[1] == 0, Inf otherwise
+
 	else: # if z-forces not in balance
 		x_zmp = comPos[0] - (comPos[2]/zAccel)*comAccel[0]
 		y_zmp = comPos[1] - (comPos[2]/zAccel)*comAccel[1]
+
 	return [x_zmp, y_zmp]
 
 ## ISVALIDZMP

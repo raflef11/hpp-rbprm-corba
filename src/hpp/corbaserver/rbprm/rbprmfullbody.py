@@ -981,22 +981,22 @@ class FullBody (object):
 	 def getAllLimbsInContact(self,stateId):
 	     return self.getLimbsInContact(self.getAllLimbsNames(),stateId)
 
-	## Set the maximum number of contacts allowed to be broken
-	def setMaxContactBreaks (self, maxContactBreaks):
-	    self.client.rbprm.rbprm.setMaxContactBreaks(maxContactBreaks)
+	 ## Set the maximum number of contacts allowed to be broken
+	 def setMaxContactBreaks (self, maxContactBreaks):
+	     self.client.rbprm.rbprm.setMaxContactBreaks(maxContactBreaks)
 
-	## Add a required (mandatory) limb in contact
-	def addRequiredLimb(self, limb):
-	    self.client.rbprm.rbprm.addRequiredLimb(limb)
+	 ## Add a required (mandatory) limb in contact
+	 def addRequiredLimb(self, limb):
+	     self.client.rbprm.rbprm.addRequiredLimb(limb)
 
-	## Remove a required limb in contact (the limb will not be mandatory)
-	def removeRequiredLimb(self, limb):
-	    self.client.rbprm.rbprm.removeRequiredLimb(limb)
+	 ## Remove a required limb in contact (the limb will not be mandatory)
+	 def removeRequiredLimb(self, limb):
+	     self.client.rbprm.rbprm.removeRequiredLimb(limb)
 
-	## Clear the list of required limbs in contact
-	def clearRequiredLimbs(self):
-	    self.client.rbprm.rbprm.clearRequiredLimbs()
+	 ## Clear the list of required limbs in contact
+	 def clearRequiredLimbs(self):
+	     self.client.rbprm.rbprm.clearRequiredLimbs()
 
-	## Print the required limbs list
-	def printRequiredLimbs(self):
-	    self.client.rbprm.rbprm.printRequiredLimbs()
+	 ## Print the required limbs list
+	 def printRequiredLimbs(self):
+	     self.client.rbprm.rbprm.printRequiredLimbs()

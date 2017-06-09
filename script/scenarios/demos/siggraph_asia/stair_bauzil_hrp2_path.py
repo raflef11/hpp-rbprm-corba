@@ -44,7 +44,22 @@ rbprmBuilder.boundSO3([-0.,0,-1,1,-1,1])
 #~ from hpp.corbaserver.rbprm. import ProblemSolver
 from hpp.corbaserver.rbprm.problem_solver import ProblemSolver
 
+extraDof = 6
+rbprmBuilder.client.basic.robot.setDimensionExtraConfigSpace(extraDof)
+rbprmBuilder.client.basic.robot.setExtraConfigSpaceBounds([-1,1,-1,1,-2,2,0,0,0,0,0,0])
+indexECS = rbprmBuilder.getConfigSize() - rbprmBuilder.client.basic.robot.getDimensionExtraConfigSpace()
+import omniORB.any
+vMax = omniORB.any.to_any(0.3);
+aMax = omniORB.any.to_any(0.5);
+mu=omniORB.any.to_any(0.5)
+
 ps = ProblemSolver( rbprmBuilder )
+
+ps.client.problem.setParameter("aMax",aMax)
+ps.client.problem.setParameter("vMax",vMax)
+ps.client.problem.setParameter("sizeFootX",omniORB.any.to_any(0.24))
+ps.client.problem.setParameter("sizeFootY",omniORB.any.to_any(0.14))
+ps.client.problem.setParameter("friction",mu)
 
 r = Viewer (ps)
 

@@ -146,8 +146,10 @@ def testZMP(convexHSuppPolygon, centerOfMass, acceleration, display = False):
 		print "Cost : " + str(cost)
 	return stable, cost
 
-def scenarioTestZMP(accel = [0.0, 0.0, 0.0]):
+def scenarioTestZMP(x_accel = 0.0):
 	import time
+
+	accel = [x_accel, 0.0, 0.0]
 
 	print "Ready to begin..."
 	raw_input()

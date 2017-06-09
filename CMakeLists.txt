@@ -51,6 +51,7 @@ ADD_REQUIRED_DEPENDENCY("hpp-rbprm")
 ADD_REQUIRED_DEPENDENCY("omniORB4 >= 4.1.4")
 ADD_REQUIRED_DEPENDENCY("hpp-model-urdf >= 3")
 ADD_REQUIRED_DEPENDENCY("hpp-affordance-corba")
+ADD_REQUIRED_DEPENDENCY("hpp-util >= 3")
 
 PKG_CONFIG_APPEND_LIBS(${PROJECT_NAME})
 ADD_SUBDIRECTORY(src)
@@ -74,6 +75,7 @@ install(FILES
   data/urdf/hrp2_rleg_rom.urdf
   data/urdf/hyq/hyq_trunk.urdf
   data/urdf/hyq/hyq_trunk_large.urdf
+  data/urdf/hyq/hyq_trunk_large_realist.urdf
   data/urdf/hyq/hyq_rhleg_rom.urdf
   data/urdf/hyq/hyq_rfleg_rom.urdf
   data/urdf/hyq/hyq_lhleg_rom.urdf
@@ -108,6 +110,23 @@ install(FILES
   data/spiderman/urdf/spiderman.urdf
 
   #~ data/urdf/scene2.urdf
+  data/urdf/robot_test/robot_test_lleg_rom.urdf
+  data/urdf/robot_test/robot_test_rleg_rom.urdf
+  data/urdf/robot_test/robot_test_trunk.urdf
+	data/urdf/ground_bigStep.urdf
+	data/urdf/ground_jump_easy.urdf
+	data/urdf/ground_jump_low.urdf
+	data/urdf/ground_jump_bar.urdf
+	data/urdf/ground_jump_med.urdf
+	data/urdf/ground_with_bridge.urdf
+	data/urdf/roomWall.urdf
+    data/urdf/sideWall.urdf
+    data/urdf/sideWall_long.urdf
+	data/urdf/downSlope.urdf
+	data/urdf/downSlope_easy.urdf
+	data/urdf/downSlope_easy20.urdf
+	data/urdf/slalom.urdf
+	data/urdf/flat_step.urdf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf
   )
 install(FILES
@@ -120,6 +139,7 @@ install(FILES
   data/srdf/hrp2_rleg_rom.srdf
   data/srdf/hyq/hyq_trunk.srdf
   data/srdf/hyq/hyq_trunk_large.srdf
+  data/srdf/hyq/hyq_trunk_large_realist.srdf
   data/srdf/hyq/hyq_rhleg_rom.srdf
   data/srdf/hyq/hyq_rfleg_rom.srdf
   data/srdf/hyq/hyq_lhleg_rom.srdf
@@ -154,6 +174,23 @@ install(FILES
   data/spiderman/srdf/spiderman_trunk.srdf
 
   #~ data/srdf/scene2.srdf
+  data/srdf/robot_test/robot_test_lleg_rom.srdf
+  data/srdf/robot_test/robot_test_rleg_rom.srdf
+  data/srdf/robot_test/robot_test_trunk.srdf
+	data/srdf/ground_bigStep.srdf
+	data/srdf/ground_jump_easy.srdf
+	data/srdf/ground_jump_low.srdf
+	data/srdf/ground_jump_bar.srdf
+	data/srdf/ground_jump_med.srdf
+	data/srdf/ground_with_bridge.srdf
+	data/srdf/roomWall.srdf
+	data/srdf/sideWall.srdf
+	data/srdf/sideWall_long.srdf
+	data/srdf/downSlope.srdf
+	data/srdf/downSlope_easy.srdf
+	data/srdf/downSlope_easy20.srdf
+	data/srdf/slalom.srdf
+	data/srdf/flat_step.srdf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/srdf
   )
 install(FILES
@@ -188,6 +225,26 @@ install(FILES
 	data/meshes/stepladder.stl
 	data/meshes/chair.stl
 	data/meshes/car.stl
+  data/meshes/polaris.stl
+  data/meshes/polaris_reduced.stl
+	data/meshes/ground_bigStep.stl
+	data/meshes/ground_jump_easy.stl
+	data/meshes/ground_jump_easyStart.stl
+	data/meshes/ground_jump_easyStart2.stl
+	data/meshes/ground_jump_easyGoal.stl
+	data/meshes/ground_jump_lowGoal.stl
+	data/meshes/ground_jump_bar.stl
+	data/meshes/ground_jump_med.stl
+	data/meshes/ground_with_bridge.stl
+	data/meshes/roomWall.stl
+	data/meshes/sideWall.stl
+	data/meshes/sideWall_long.stl
+	data/meshes/downSlope.stl
+	data/meshes/downSlope_easy.stl
+	data/meshes/downSlope_easy20.stl
+	data/meshes/downSlope2.stl
+	data/meshes/slalom.stl
+	data/meshes/flat_step.stl
 	data/meshes/polaris.stl
 	data/meshes/polaris_reduced.stl
 	data/meshes/siggraph_asia/twister.stl
@@ -198,7 +255,6 @@ install(FILES
     data/meshes/siggraph_asia/plane_hole.stl
     data/meshes/siggraph_asia/wall.stl
     data/meshes/siggraph_asia/stairs_lower.stl
-	
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/meshes
   )
 
@@ -234,8 +290,12 @@ install(FILES
 
 install(FILES
 	data/meshes/hyq/hyq_all.stl
+	data/meshes/hyq/hyq_all_realist.stl
 	data/meshes/hyq/hyq_trunk.stl
 	data/meshes/hyq/hyq_trunk_large.stl
+	data/meshes/hyq/hyq_trunk_large2.stl
+	data/meshes/hyq/hyq_trunk_large3.stl
+	data/meshes/hyq/hyq_trunk_large4.stl
 	data/meshes/hyq/hyq_rom.stl
 	data/meshes/hyq/hyq_rhleg_rom.stl
 	data/meshes/hyq/hyq_rfleg_rom.stl
@@ -244,5 +304,17 @@ install(FILES
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/meshes/hyq
   )
 
+install(FILES
+	data/meshes/robot_test/robot_trunk_view.stl
+	data/meshes/robot_test/robot_trunk.stl
+	data/meshes/robot_test/Lleg_rom.stl
+	data/meshes/robot_test/Rleg_rom.stl
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/meshes/robot_test
+  )
+  
+install(DIRECTORY data/hyq_description
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/../
+  )
+  
 SETUP_PROJECT_FINALIZE()
 

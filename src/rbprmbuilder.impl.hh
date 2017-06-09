@@ -30,8 +30,11 @@
 # include <hpp/core/problem-solver.hh>
 # include <hpp/core/discretized-collision-checking.hh>
 # include <hpp/core/straight-path.hh>
-
-#include <hpp/fcl/BVH/BVH_model.h>
+# include <hpp/rbprm/rbprm-path-validation.hh>
+# include <hpp/fcl/BVH/BVH_model.h>
+# include <hpp/core/config-validations.hh>
+#include <hpp/rbprm/dynamic/dynamic-path-validation.hh>
+# include "hpp/corbaserver/fwd.hh"
 
 namespace hpp {
   namespace rbprm {
@@ -63,16 +66,62 @@ namespace hpp {
         hpp::core::PathValidationPtr_t createPathValidation (const hpp::model::DevicePtr_t& robot, const hpp::model::value_type& val)
         {
             hpp::model::RbPrmDevicePtr_t robotcast = boost::static_pointer_cast<hpp::model::RbPrmDevice>(robot);
-						affMap_ = problemSolver_->map
-							<std::vector<boost::shared_ptr<model::CollisionObject> > > ();
-		        if (affMap_.empty ()) {
-    	        throw hpp::Error ("No affordances found. Unable to create Path Validaton object.");
-      		  }
+            affMap_ = problemSolver_->map
+              <std::vector<boost::shared_ptr<model::CollisionObject> > > ();
+            if (affMap_.empty ()) {
+              throw hpp::Error ("No affordances found. Unable to create Path Validaton object.");
+            }
             hpp::rbprm::RbPrmValidationPtr_t validation
-							(hpp::rbprm::RbPrmValidation::create(robotcast, romFilter_, affFilter_, affMap_));
-            hpp::core::DiscretizedCollisionCheckingPtr_t collisionChecking = hpp::core::DiscretizedCollisionChecking::create(robot,val);
+              (hpp::rbprm::RbPrmValidation::create(robotcast, romFilter_, affFilter_, affMap_));
+            hpp::rbprm::RbPrmPathValidationPtr_t collisionChecking = hpp::rbprm::RbPrmPathValidation::create(robot,val);
             collisionChecking->add (validation);
+            problemSolver_->problem()->configValidation(core::ConfigValidations::create ());
+            problemSolver_->problem()->configValidations()->add(validation);
             return collisionChecking;
+        }
+
+        hpp::core::PathValidationPtr_t createDynamicPathValidation (const hpp::model::DevicePtr_t& robot, const hpp::model::value_type& val)
+        {
+          hpp::model::RbPrmDevicePtr_t robotcast = boost::static_pointer_cast<hpp::model::RbPrmDevice>(robot);
+          affMap_ = problemSolver_->map
+            <std::vector<boost::shared_ptr<model::CollisionObject> > > ();
+          if (affMap_.empty ()) {
+            throw hpp::Error ("No affordances found. Unable to create Path Validaton object.");
+          }
+          hpp::rbprm::RbPrmValidationPtr_t validation
+            (hpp::rbprm::RbPrmValidation::create(robotcast, romFilter_, affFilter_, affMap_));
+          hpp::rbprm::DynamicPathValidationPtr_t collisionChecking = hpp::rbprm::DynamicPathValidation::create(robot,val);
+          collisionChecking->add (validation);
+          problemSolver_->problem()->configValidation(core::ConfigValidations::create ());
+          problemSolver_->problem()->configValidations()->add(validation);
+          // build the dynamicValidation :
+          double sizeFootX,sizeFootY,mass,mu;
+          bool rectangularContact;
+          try {
+            boost::any value_x = problemSolver_->problem()->get<boost::any> (std::string("sizeFootX"));
+            boost::any value_y = problemSolver_->problem()->get<boost::any> (std::string("sizeFootY"));
+            sizeFootX = boost::any_cast<double>(value_x)/2.;
+            sizeFootY = boost::any_cast<double>(value_y)/2.;
+            rectangularContact = 1;
+          } catch (const std::exception& e) {
+            hppDout(warning,"Warning : size of foot not definied, use 0 (contact point)");
+            sizeFootX =0;
+            sizeFootY =0;
+            rectangularContact = 0;
+          }
+          mass = robot->mass();
+          try {
+            boost::any value = problemSolver_->problem()->get<boost::any> (std::string("friction"));
+            mu = boost::any_cast<double>(value);
+            hppDout(notice,"dynamic val : mu define in python : "<<mu);
+          } catch (const std::exception& e) {
+            mu= 0.5;
+            hppDout(notice,"dynamic val : mu not defined, take : "<<mu<<" as default.");
+          }
+          DynamicValidationPtr_t dynamicVal = DynamicValidation::create(rectangularContact,sizeFootX,sizeFootY,mass,mu);
+          collisionChecking->addDynamicValidator(dynamicVal);
+
+          return collisionChecking;
         }
 
         hpp::core::ProblemSolverPtr_t problemSolver_;
@@ -113,6 +162,10 @@ namespace hpp {
 
         virtual void loadFullBodyRobotFromExistingRobot () throw (hpp::Error);
 
+        void setStaticStability(const bool staticStability) throw (hpp::Error);
+
+        void setReferenceConfig(const hpp::floatSeq &referenceConfig) throw (hpp::Error);
+
 
         virtual void setFilter(const hpp::Names_t& roms) throw (hpp::Error);
 				virtual void setAffordanceFilter(const char* romName, const hpp::Names_t& affordances) throw (hpp::Error);
@@ -128,7 +181,7 @@ namespace hpp {
         virtual double getEffectorDistance(unsigned short  state1, unsigned short  state2) throw (hpp::Error);
 
         virtual hpp::floatSeq* generateContacts(const hpp::floatSeq& configuration,
-                                                const hpp::floatSeq& direction) throw (hpp::Error);
+                                                const hpp::floatSeq& direction, const hpp::floatSeq& acceleration, const double robustnessThreshold) throw (hpp::Error);
 
         virtual hpp::floatSeq* generateGroundContact(const hpp::Names_t& contactLimbs) throw (hpp::Error);
 
@@ -178,7 +231,7 @@ namespace hpp {
             (RbPrmFullBodyPtr_t, core::ProblemPtr_t, const core::PathPtr_t,
              const  State &, const State &, const  std::size_t, const bool);
 
-        hpp::floatSeq* rrt(t_rrt functor ,double state1,double state2,
+        hpp::floatSeq* rrt(t_rrt functor , double state1, double state2,
                            unsigned short comTraj1, unsigned short comTraj2, unsigned short comTraj3,
                            unsigned short numOptimizations) throw (hpp::Error);
 
@@ -225,6 +278,9 @@ namespace hpp {
         virtual void runSampleAnalysis(const char* analysis, double isstatic) throw (hpp::Error);
         virtual hpp::floatSeq* runLimbSampleAnalysis(const char* limbname, const char* analysis, double isstatic) throw (hpp::Error);
         virtual void dumpProfile(const char* logFile) throw (hpp::Error);
+        virtual double getTimeAtState(unsigned short stateId)throw (hpp::Error);
+        virtual Names_t* getContactsVariations(unsigned short stateIdFrom,unsigned short stateIdTo )throw (hpp::Error);
+        virtual Names_t* getAllLimbsNames()throw (hpp::Error);
         virtual CORBA::Short addNewContact(unsigned short stateId, const char* limbName,
                                             const hpp::floatSeq& position, const hpp::floatSeq& normal, unsigned short max_num_sample) throw (hpp::Error);
         virtual CORBA::Short removeContact(unsigned short stateId, const char* limbName) throw (hpp::Error);

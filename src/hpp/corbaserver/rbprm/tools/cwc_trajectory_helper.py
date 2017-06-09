@@ -9,7 +9,7 @@ from numpy import append, array
 res = []
 trajec = []
 trajec_mil = []
-contacts = []
+#~ contacts = []
 pos = []
 normals = []
 pEffs = []
@@ -33,14 +33,13 @@ def displayComPath(pp, pathId,color=[0.,0.75,0.15,0.9]) :
 	pp.publisher.client.gui.refresh()
 
 
-def genPandNandConesperFrame(fullBody, stateid, limbsCOMConstraints, cones, pp, path_ids, times, dt_framerate=1./24.):
+def genPandNperFrame(fullBody, stateid, limbsCOMConstraints, pp, path_ids, times, dt_framerate=1./24.):
 	p, N= fullBody.computeContactPointsPerLimb(stateid, limbsCOMConstraints.keys(), limbsCOMConstraints)
 	freeEffectors = [ [limbsCOMConstraints[limb]['effector'] for limb in limbsCOMConstraints.keys() if not p[i].has_key(limbsCOMConstraints[limb]['effector'])] for i in range(len(p))]
 	config_size = len(fullBody.getCurrentConfig())
 	interpassed = False
 	pRes = []
 	nRes = []
-	cRes = []
 	for idx, path_id in enumerate(path_ids):		
 		length = pp.client.problem.pathLength (path_id)
 		num_frames_required = times[idx] / dt_framerate
@@ -50,8 +49,7 @@ def genPandNandConesperFrame(fullBody, stateid, limbsCOMConstraints, cones, pp, 
 		dt_finals  = [dt*i for i in range(int(round(num_frames_required)))]	
 		pRes+= [p[idx] for t in dt_finals]
 		nRes+= [N[idx] for t in dt_finals]
-		cRes+= [cones[idx] for t in dt_finals]
-	return pRes, nRes, freeEffectors, cRes
+	return pRes, nRes, freeEffectors
 
 
 def __getPos(effector, fullBody, config):
@@ -106,6 +104,7 @@ def __update_cwc_time(t):
 	stat_data["time_cwc"]["numiter"] += 1
 	
 
+"""
 def __getTimes(fullBody, configs, i, time_scale):
 	trunk_distance =  np.linalg.norm(np.array(configs[i+1][0:3]) - np.array(configs[i][0:3]))
 	distance = max(fullBody.getEffectorDistance(i,i+1), trunk_distance)
@@ -122,25 +121,56 @@ def __getTimes(fullBody, configs, i, time_scale):
 	else:
 		dt = 0.1
 	return times, dt, distance
-		
+
+"""
+
+def __getTimes(fullBody, configs, i, time_scale,use_window=0):
+		t = fullBody.getTimeAtState(i+1) - fullBody.getTimeAtState(i)
+		dt = 0.01
+		print "t = ",t
+		t = time_scale*t
+		print "after scale, t = ",t
+		trunk_distance =  np.linalg.norm(np.array(configs[i+1][0:3]) - np.array(configs[i][0:3]))
+		distance = max(fullBody.getEffectorDistance(i,i+1), trunk_distance)
+		# TODO : si t = 0, hardcoded ...
+		if t <= dt*6.:
+				print "WARNING : in getTime, t=0"
+				t = dt*6.
+				use_window = 2
+		times = [dt*2. , 0] #FIXME : hardcoded value depend on interpolation step choosen (not available here)
+		if t > dt*14.:
+			times = [dt*4. , 0]
+		times[1] = t - 2*times[0]
+		times[1] = float((int)(math.floor(times[1]*100.))) / 100.
+		print "times : ",times
+		return times, dt, distance,use_window
+
 
 from hpp import Error as hpperr
 import sys, time
-def step(fullBody, configs, i, optim, pp, limbsCOMConstraints,  friction = 0.5, optim_effectors = True, time_scale = 20., 
-useCOMConstraints = False, use_window = 0, verbose = False, draw = False,trackedEffectors = [], saveForSim=False,):
+def step(fullBody, configs, i, optim, pp, limbsCOMConstraints,  friction = 0.5, optim_effectors = True, time_scale = 20., useCOMConstraints = False, use_window = 0, verbose = False, draw = False,
+trackedEffectors = [],use_velocity=False,pathId = 0):
+	print "##########################################"
 	global errorid
 	global stat_data	
 	fail = 0
 	#~ try:
+	print "Use window = ",use_window
 	if(True):
 		times = [];
 		dt = 1000;
-		distance = __getTimes(fullBody, configs, i, time_scale)
+		times, dt, distance,use_window = __getTimes(fullBody, configs, i, time_scale,use_window)
+		print "Use window = ",use_window
+		if distance == 0:
+				use_window = use_window+1
 		use_window = max(0, min(use_window,  (len(configs) - 1) - (i + 2))) # can't use preview if last state is reached
-		for w in range(use_window+1):
-			times2, dt2, dist2 = __getTimes(fullBody, configs, i+w, time_scale)
+		w = 0
+		while w < (use_window+1):
+			times2, dt2, dist2,use_window = __getTimes(fullBody, configs, i+w, time_scale,use_window)
+			print "Use window = ",use_window
 			times += times2
 			dt = min(dt, dt2)
+			w = w+1
 		time_per_path = [times[0]] + [times[1]] + [times [0]]
 		print 'time per path', times, time_per_path
 		print 'dt', dt
@@ -151,39 +181,50 @@ useCOMConstraints = False, use_window = 0, verbose = False, draw = False,tracked
 			else:
 				comC = None
 			if(optim_effectors):
-				pid, trajectory, timeelapsed, final_state, cones  =  solve_effector_RRT(fullBody, configs, i, True, friction, dt, times, False, optim, draw, verbose, comC, False, use_window=use_window, trackedEffectors = trackedEffectors)
+				pid, trajectory, timeelapsed, final_state  =  solve_effector_RRT(fullBody, configs, i, True, friction, dt, times, False, optim, draw, verbose, comC, False, use_window=use_window, trackedEffectors = trackedEffectors,use_velocity=use_velocity,pathId = pathId)
 			else :
-				pid, trajectory, timeelapsed, final_state, cones  =       solve_com_RRT(fullBody, configs, i, True, friction, dt, times, False, optim, draw, verbose, comC, False, use_window=use_window, trackedEffectors = trackedEffectors)
+				pid, trajectory, timeelapsed, final_state  =       solve_com_RRT(fullBody, configs, i, True, friction, dt, times, False, optim, draw, verbose, comC, False, use_window=use_window, trackedEffectors = trackedEffectors,use_velocity=use_velocity,pathId = pathId)
 			displayComPath(pp, pid)
 			#~ pp(pid)
 			global res
 			res = res + [pid]
 			global trajec
 			global trajec_mil			
-			frame_rate = 1./24.
+			frame_rate = 0.01
+			frame_rate_andrea = 1./100.
+#			frame_rate_andrea = 1./1000.
+			#~ if(len(trajec) > 0):
+				#~ frame_rate = 1./25.
+				#~ frame_rate_andrea = 1./1001.
+			print "first traj :"
 			new_traj = gen_trajectory_to_play(fullBody, pp, trajectory, time_per_path, frame_rate)
+			print "traj Andrea : "
+			new_traj_andrea = gen_trajectory_to_play(fullBody, pp, trajectory, time_per_path,frame_rate_andrea)
+			#~ new_contacts = gencontactsPerFrame(fullBody, i, limbsCOMConstraints, pp, trajectory, times, frame_rate_andrea)	
+			Ps, Ns, freeEffectorsPerPhase = genPandNperFrame(fullBody, i, limbsCOMConstraints, pp, trajectory, time_per_path, frame_rate_andrea)
+			NPeffs = genPEffperFrame(fullBody, freeEffectorsPerPhase, new_traj_andrea, pp, time_per_path, frame_rate_andrea)
+			com = genComPerFrame(final_state, dt, frame_rate_andrea)
+			#~ if(len(trajec) > 0):
+				#~ new_traj = new_traj[1:]
+				#~ new_traj_andrea = new_traj_andrea[1:]
+				#~ Ps = Ps[1:]
+				#~ Ns = Ns[1:]
+				#~ com = com[1:]
+				#~ NPeffs = NPeffs[1:]
 			trajec = trajec + new_traj
-			if(saveForSim):
-				frame_rate_sim = 1./1000.
-				new_traj_andrea = gen_trajectory_to_play(fullBody, pp, trajectory, time_per_path,frame_rate_sim)
-				Ps, Ns, freeEffectorsPerPhase, Ks = genPandNandConesperFrame(fullBody, i, limbsCOMConstraints, cones, pp, trajectory, time_per_path, frame_rate_andrea)
-				NPeffs = genPEffperFrame(fullBody, freeEffectorsPerPhase, new_traj_andrea, pp, time_per_path, frame_rate_andrea)
-				com = genComPerFrame(final_state, dt, frame_rate_andrea)
-				trajec_mil += new_traj_andrea
-				#~ global contacts
-				#~ contacts += new_contacts	
-				global cones_saved
-				cones_saved += Ks
-				global pos
-				pos += Ps
-				global normals
-				normals+= Ns
-				global pEffs
-				pEffs+= NPeffs
-				global coms
-				coms+= com
-				print len(trajec_mil), " ",  len(pos), " ", len(normals), " ", len(coms), " ", len(pEffs), " ", len(cones_saved)
-				assert(len(trajec_mil) == len(pos) and len(normals) == len(pos) and len(normals) == len(coms) and len(cones_saved) == len(coms) and len(coms) == len(pEffs))
+			trajec_mil += new_traj_andrea
+			#~ global contacts
+			#~ contacts += new_contacts	
+			global pos
+			pos += Ps
+			global normals
+			normals+= Ns
+			global pEffs
+			pEffs+= NPeffs
+			global coms
+			coms+= com
+			#print len(trajec_mil), " ",  len(pos), " ", len(normals), " ", len(coms), " ", len(pEffs)
+			#assert(len(trajec_mil) == len(pos) and len(normals) == len(pos) and len(normals) == len(coms) and len(coms) == len(pEffs))
 			stat_data["num_success"] += 1
 		else:
 			print "TODO, NO CONTACT VARIATION, LINEAR INTERPOLATION REQUIRED"
@@ -256,8 +297,7 @@ useCOMConstraints = False, use_window = 0, verbose = False, draw = False,tracked
 		#~ stat_data["num_errors"] += 1
 		#~ errorid += [i]
 		#~ fail+=1
-	#~ return fail
-	return final_state, cones
+	return fail
 	
 def step_profile(fullBody, configs, i, optim, limbsCOMConstraints,  friction = 0.5, optim_effectors = True, time_scale = 20., useCOMConstraints = False):
 	global errorid		
@@ -349,7 +389,6 @@ from pickle import dump
 def compressData(data_array, filename):
 	qs = [data['q'][:] for data in data_array]
 	C =  [data['C'][:] for data in data_array]
-	cones =  [data['cone'][:] for data in data_array]
 	a = {}
 	frameswitches = []
 	for i in range(0,len(pos)):
@@ -361,7 +400,6 @@ def compressData(data_array, filename):
 	res = {}
 	res['Q'] = [data['q'][:] for data in data_array]
 	res['C'] = [data['C'][:] for data in data_array]
-	res['cones'] = [data['cone'][:] for data in data_array]
 	res['fly'] = pEffs
 	res['frameswitches'] = frameswitches
 	f1=open(filename+"_compressed", 'w+')
@@ -377,7 +415,7 @@ def saveToPinocchio(filename):
 		quat_end = q[4:7]
 		q[6] = q[3]
 		q[3:6] = quat_end
-		data = {'q':q, 'P' : pos[i], 'N' : normals[i], 'C' : coms [i], 'pEffs' : pEffs[i], 'cone' : cones_saved[i]}
+		data = {'q':q, 'P' : pos[i], 'N' : normals[i], 'C' : coms [i], 'pEffs' : pEffs[i]}
 		res += [data]
 	f1=open(filename, 'w+')
 	dump(res, f1)
@@ -394,12 +432,10 @@ def clean():
 	global normals
 	global pEffs
 	global coms
-	global cones_saved
-	cones_saved = []
 	res = []
 	trajec = []
 	trajec_mil = []
-	#~ contacts = []
+	contacts = []
 	errorid = []
 	pos = []
 	normals = []

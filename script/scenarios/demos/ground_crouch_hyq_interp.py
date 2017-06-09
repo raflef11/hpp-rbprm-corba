@@ -194,6 +194,6 @@ def d():
 def e():
 	print "displaying contact plan"
 	contactPlan()
-	
+
 print "Root path generated in " + str(tp.t) + " ms."
 	

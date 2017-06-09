@@ -40,7 +40,11 @@
 #include <hpp/core/basic-configuration-shooter.hh>
 #include <hpp/core/collision-validation.hh>
 #include <fstream>
+#include <hpp/rbprm/planner/dynamic-planner.hh>
+#include <hpp/rbprm/planner/rbprm-steering-kinodynamic.hh>
+#include <hpp/model/configuration.hh>
 #include <algorithm>    // std::random_shuffle
+#include <hpp/rbprm/interpolation/time-constraint-helper.hh>
 #include "spline/bezier_curve.h"
 #include "hpp/rbprm/interpolation/polynom-trajectory.hh"
 
@@ -143,6 +147,13 @@ namespace hpp {
                     std::string (urdfSuffix),
                     std::string (srdfSuffix));
             fullBody_ = rbprm::RbPrmFullBody::create(device);
+            try {
+              boost::any value = problemSolver_->problem()->get<boost::any> (std::string("friction"));
+              fullBody_->setFriction(boost::any_cast<double>(value));
+              hppDout(notice,"fullbody : mu define in python : "<<fullBody_->getFriction());
+            } catch (const std::exception& e) {
+              hppDout(notice,"fullbody : mu not defined, take : "<<fullBody_->getFriction()<<" as default.");
+            }
             problemSolver_->pathValidationType ("Discretized",0.05); // reset to avoid conflict with rbprm path
             problemSolver_->robot (fullBody_->device_);
             problemSolver_->resetProblem();
@@ -579,6 +590,20 @@ namespace hpp {
         return res;
     }
 
+    void RbprmBuilder::setStaticStability(const bool staticStability) throw (hpp::Error){
+      if(!fullBodyLoaded_)
+        throw Error ("No full body robot was loaded");
+      fullBody_->staticStability(staticStability);
+    }
+
+    void RbprmBuilder::setReferenceConfig(const hpp::floatSeq& referenceConfig) throw (hpp::Error){
+      if(!fullBodyLoaded_)
+        throw Error ("No full body robot was loaded");
+      model::ConfigurationPtr_t config(new Configuration_t(dofArrayToConfig (fullBody_->device_, referenceConfig)));
+      fullBody_->referenceConfig(config);
+    }
+
+
 
     void RbprmBuilder::setFilter(const hpp::Names_t& roms) throw (hpp::Error)
     {
@@ -699,25 +724,27 @@ namespace hpp {
     }
 
     hpp::floatSeq* RbprmBuilder::generateContacts(const hpp::floatSeq& configuration,
-			const hpp::floatSeq& direction) throw (hpp::Error)
+      const hpp::floatSeq& direction,const hpp::floatSeq& acceleration, const double robustnessThreshold ) throw (hpp::Error)
     {
         if(!fullBodyLoaded_)
             throw Error ("No full body robot was loaded");
         try
         {
-            fcl::Vec3f dir;
+            fcl::Vec3f dir,acc;
             for(std::size_t i =0; i <3; ++i)
             {
                 dir[i] = direction[(_CORBA_ULong)i];
+                acc[i] = acceleration[(_CORBA_ULong)i];
             }
-						const affMap_t &affMap = problemSolver_->map
+            const affMap_t &affMap = problemSolver_->map
 							<std::vector<boost::shared_ptr<model::CollisionObject> > > ();
 		        if (affMap.empty ()) {
     	        throw hpp::Error ("No affordances found. Unable to generate Contacts.");
       		  }
             model::Configuration_t config = dofArrayToConfig (fullBody_->device_, configuration);
-            rbprm::State state = rbprm::contact::ComputeContacts(fullBody_,config,
-							affMap, bindShooter_.affFilter_, dir);
+
+            rbprm::State state = rbprm::contact::ComputeContacts(fullBody_,config,affMap, bindShooter_.affFilter_, dir,robustnessThreshold,acc);
+
             hpp::floatSeq* dofArray = new hpp::floatSeq();
             dofArray->length(_CORBA_ULong(state.configuration_.rows()));
             for(std::size_t i=0; i< _CORBA_ULong(config.rows()); i++)
@@ -730,6 +757,7 @@ namespace hpp {
 
     hpp::floatSeq* RbprmBuilder::generateGroundContact(const hpp::Names_t& contactLimbs) throw (hpp::Error)
     {
+        std::cout<<"generate ground contact"<<std::endl;
         if(!fullBodyLoaded_)
             throw Error ("No full body robot was loaded");
         try
@@ -1062,8 +1090,7 @@ namespace hpp {
             const fcl::Matrix3f& rot = transform.getRotation();
             state.contactPositions_[*cit] = transform.getTranslation();
             state.contactRotation_[*cit] = rot;
-            //const fcl::Vec3f z = transform.getRotation() * lit->second->normal_;
-            const fcl::Vec3f z = fcl::Vec3f(0,0,1);
+            const fcl::Vec3f z = transform.getRotation() * lit->second->normal_;
             state.contactNormals_[*cit] = z;
             state.contacts_[*cit] = true;
             state.contactOrder_.push(*cit);
@@ -1130,6 +1157,55 @@ namespace hpp {
         {
             throw Error(e.what());
         }
+    }
+
+    double RbprmBuilder::getTimeAtState(unsigned short stateId)throw (hpp::Error){
+      try
+      {
+          if(lastStatesComputed_.size() == 0)
+          {
+              throw std::runtime_error ("states not yet computed, call interpolate() first.");
+          }
+          if(lastStatesComputedTime_.size() <= stateId){
+            throw std::runtime_error ("invalid state id : "+std::string(""+stateId)+" number of state = "+std::string(""+lastStatesComputedTime_.size()));
+          }
+          return lastStatesComputedTime_[stateId].first;
+      }
+      catch(std::runtime_error& e)
+      {
+          throw Error(e.what());
+      }
+    }
+
+    Names_t* RbprmBuilder::getContactsVariations(unsigned short stateIdFrom,unsigned short stateIdTo )throw (hpp::Error){
+      try
+      {
+          if(lastStatesComputed_.size() == 0)
+          {
+              throw std::runtime_error ("states not yet computed, call interpolate() first.");
+          }
+          if(lastStatesComputedTime_.size() <= stateIdFrom){
+            throw std::runtime_error ("invalid state id : "+std::string(""+stateIdFrom)+" number of state = "+std::string(""+lastStatesComputedTime_.size()));
+          }
+          if(lastStatesComputedTime_.size() <= stateIdTo){
+            throw std::runtime_error ("invalid state id : "+std::string(""+stateIdTo)+" number of state = "+std::string(""+lastStatesComputedTime_.size()));
+          }
+          State stateFrom = lastStatesComputed_[stateIdFrom];
+          State stateTo = lastStatesComputed_[stateIdTo];
+          std::vector<std::string> variations_s = stateTo.allVariations(stateFrom,rbprm::interpolation::extractEffectorsName(fullBody_->GetLimbs()));
+          CORBA::ULong size = (CORBA::ULong) variations_s.size ();
+          char** nameList = Names_t::allocbuf(size);
+          Names_t *variations = new Names_t (size,size,nameList);
+          for (std::size_t i = 0 ; i < variations_s.size() ; ++i){
+            nameList[i] = (char*) malloc (sizeof(char)*(variations_s[i].length ()+1));
+            strcpy (nameList [i], variations_s[i].c_str ());
+          }
+          return variations;
+      }
+      catch(std::runtime_error& e)
+      {
+          throw Error(e.what());
+      }
     }
 
     std::vector<State> TimeStatesToStates(const T_StateFrame& ref)
@@ -1836,6 +1912,12 @@ assert(s2 == s1 +1);
                                     unsigned short cT1, unsigned short cT2, unsigned short cT3,
                                     unsigned short numOptimizations)  throw (hpp::Error)
     {
+        hppDout(notice,"########## begin rrt for state "<<state1<<" ###########");
+        unsigned int seed =  (unsigned int) (time(NULL)) ;
+        std::cout<<"seed rrt = "<<seed<<std::endl;
+        hppDout(notice,"seed rrt = "<<seed);
+        srand ( seed);
+
         try
         {
             std::vector<CORBA::Short> pathsIds;
@@ -1858,55 +1940,52 @@ assert(s2 == s1 +1);
             std::cout << "com 5 " << paths[cT3]->end().head<3>().transpose() << std::endl;
 
             State& state1=lastStatesComputed_[s1], state2=lastStatesComputed_[s2];
+            hppDout(notice,"start comRRTFromPos");
+
             State s1Bis(state1);
-            s1Bis.configuration_ = project_or_throw(fullBody_, s1Bis,paths[cT1]->end().head<3>(), true);
-            std::cout << "projection succeedded " << paths[cT1]->end().head<3>() << std::endl;
+
+            hppDout(notice,"state1 = "<<model::displayConfig(state1.configuration_));
+            s1Bis.configuration_ = project_or_throw(fullBody_,s1Bis,paths[cT1]->end().head<3>());
+
+            hppDout(notice,"state1 after projection= "<<model::displayConfig(s1Bis.configuration_));
+            for(std::map<std::string,bool>::const_iterator cit = s1Bis.contacts_.begin();cit!=s1Bis.contacts_.end(); ++ cit)
+            {
+              hppDout(notice,"contact : "<<cit->first<<" = "<<cit->second);
+            }
+
             State s2Bis(state2);
-            s2Bis.configuration_ = project_or_throw(fullBody_, s2Bis,paths[cT2]->end().head<3>(), true);
+            hppDout(notice,"state2 = "<<model::displayConfig(state2.configuration_));
+            s2Bis.configuration_ = project_or_throw(fullBody_,s2Bis,paths[cT2]->end().head<3>());
+            hppDout(notice,"state2 after projection= "<<model::displayConfig(s2Bis.configuration_));
+            for(std::map<std::string,bool>::const_iterator cit = s2Bis.contacts_.begin();cit!=s2Bis.contacts_.end(); ++ cit)
+            {
+              hppDout(notice,"contact : "<<cit->first<<" = "<<cit->second);
+            }
 
             core::PathVectorPtr_t resPath = core::PathVector::create(fullBody_->device_->configSize(), fullBody_->device_->numberDof());
             std::cout << "projection succeedded " << paths[cT2]->end().head<3>() << std::endl;
 
-           /* ValidationReportPtr_t rport (ValidationReportPtr_t(new CollisionValidationReport));
-
-            BasicConfigurationShooterPtr_t shooter = BasicConfigurationShooter::create(fullBody_->device_);
-            bool found = false;
-            for (int i = 0; i< 100 && !found;  ++i)
+            ValidationReportPtr_t rport (ValidationReportPtr_t(new CollisionValidationReport));
+            fullBody_->device_->currentConfiguration(s1Bis.configuration_);
+            if(!(problemSolver_->problem()->configValidations()->validate(s1Bis.configuration_, rport)))
             {
-                fullBody_->device_->currentConfiguration(s1Bis.configuration_);
-                found =problemSolver_->problem()->configValidations()->validate(s1Bis.configuration_, rport);
-                if(!found)
-                {
-                    std::cout << "collission " << *rport << std::endl;
-                    s1Bis.configuration_ = *shooter->shoot();
-                    s1Bis.configuration_ = project_or_throw(fullBody_, s1Bis,paths[cT1]->end().head<3>());
-                    std::cout << "projection succeedded " << paths[cT1]->end().head<3>() << std::endl;
-                }
+                std::cout << "could not project s1Bis without collision at state " << s1  << std::endl;
+                rport->print(std::cout);
+                throw std::runtime_error ("could not project without collision at state " + s1 );
             }
-            if(found)
-                std::cout << "got out ! " << std::endl;
-            bool found2 = false;
-            for (int i = 0; i< 100 && found && !found2; ++i)
+            if(!(problemSolver_->problem()->configValidations()->validate(s2Bis.configuration_, rport)))
             {
-                fullBody_->device_->currentConfiguration(s2Bis.configuration_);
-                found2 =problemSolver_->problem()->configValidations()->validate(s2Bis.configuration_, rport);
-                if(!found2)
-                {
-                    std::cout << "collission " << *rport << std::endl;
-                    s2Bis.configuration_ = *shooter->shoot();
-                    s2Bis.configuration_ = project_or_throw(fullBody_, s2Bis,paths[cT2]->end().head<3>());
-                    std::cout << "projection succeedded " << paths[cT2]->end().head<3>() << std::endl;
-                }
+                std::cout << "could not project s2Bis without collision at state " << s1  << std::endl;
+                rport->print(std::cout);
+                throw std::runtime_error ("could not project without collision at state " + s1 );
             }
-            if(!found || !found2)
-            {
-                std::cout << "could not project without collision at state " << s1  << std::endl;
-//throw std::runtime_error ("could not project without collision at state " + s1 );
-            }*/
 
-            {
+
+            try{
+                hppDout(notice,"begin comRRT states 1 and 1bis");
                 core::PathPtr_t p1 = interpolation::comRRT(fullBody_,problemSolver_->problem(), paths[cT1],
                         state1,s1Bis, numOptimizations,true);
+                hppDout(notice,"end comRRT");
                 // reduce path to remove extradof
                 core::SizeInterval_t interval(0, p1->initial().rows()-1);
                 core::SizeIntervals_t intervals;
@@ -1916,11 +1995,17 @@ assert(s2 == s1 +1);
                 pathsIds.push_back(AddPath(p1,problemSolver_));
                 std::cout << "PATH 1 OK " << std::endl;
             }
-
-
+            catch(std::runtime_error& e)
             {
+                throw Error(e.what());
+            }
+
+
+            try{
+                hppDout(notice,"begin comRRT between statebis 1 and 2");
                 core::PathPtr_t p2 =(*functor)(fullBody_,problemSolver_->problem(), paths[cT2],
                     s1Bis,s2Bis, numOptimizations,true);
+                hppDout(notice,"end comRRT");
                 pathsIds.push_back(AddPath(p2,problemSolver_));
                 // reduce path to remove extradof
                 core::SizeInterval_t interval(0, p2->initial().rows()-1);
@@ -1930,11 +2015,17 @@ assert(s2 == s1 +1);
                 resPath->appendPath(reducedPath);
                 std::cout << "PATH 2 OK " << std::endl;
             }
+            catch(std::runtime_error& e)
+            {
+                throw Error(e.what());
+            }
 
             //if(s2Bis.configuration_ != state2.configuration_)
-            {
+            try{
+                hppDout(notice,"begin comRRT states 2bis and 2");
                 core::PathPtr_t p3= interpolation::comRRT(fullBody_,problemSolver_->problem(), paths[cT3],
                         s2Bis,state2, numOptimizations,true);
+                hppDout(notice,"end comRRT");
                 // reduce path to remove extradof
                 core::SizeInterval_t interval(0, p3->initial().rows()-1);
                 core::SizeIntervals_t intervals;
@@ -1943,6 +2034,10 @@ assert(s2 == s1 +1);
                 resPath->appendPath(reducedPath);
                 pathsIds.push_back(AddPath(p3,problemSolver_));
                 std::cout << "PATH 3 OK " << std::endl;
+            }
+            catch(std::runtime_error& e)
+            {
+                throw Error(e.what());
             }
             pathsIds.push_back(AddPath(resPath,problemSolver_));
 
@@ -2123,6 +2218,8 @@ assert(s2 == s1 +1);
 
     void RbprmBuilder::saveComputedStates(const char* outfilename) throw (hpp::Error)
     {
+      std::cout<<"saveComputedStates"<<std::endl;
+
         std::stringstream ss;
         ss << lastStatesComputed_.size()-2 << "\n";
         std::vector<rbprm::State>::iterator cit = lastStatesComputed_.begin()+1;
@@ -2647,6 +2744,28 @@ assert(s2 == s1 +1);
                                                    boost::bind(&BindShooter::create, boost::ref(bindShooter_), _1));
         problemSolver->add<core::PathValidationBuilder_t>("RbprmPathValidation",
                                                    boost::bind(&BindShooter::createPathValidation, boost::ref(bindShooter_), _1, _2));
+        problemSolver->add<core::PathValidationBuilder_t>("RbprmDynamicPathValidation",
+                                                   boost::bind(&BindShooter::createDynamicPathValidation, boost::ref(bindShooter_), _1, _2));
+        problemSolver->add<core::PathPlannerBuilder_t>("DynamicPlanner",DynamicPlanner::createWithRoadmap);
+        problemSolver->add <core::SteeringMethodBuilder_t> ("RBPRMKinodynamic", SteeringMethodKinodynamic::create);
+
+
+    }
+
+    Names_t* RbprmBuilder::getAllLimbsNames()throw (hpp::Error)
+    {
+      if(!fullBodyLoaded_){
+        throw std::runtime_error ("fullBody not loaded");
+      }
+      std::vector<std::string> names = rbprm::interpolation::extractEffectorsName(fullBody_->GetLimbs());
+      CORBA::ULong size = (CORBA::ULong) names.size ();
+      char** nameList = Names_t::allocbuf(size);
+      Names_t *limbsNames = new Names_t (size,size,nameList);
+      for (std::size_t i = 0 ; i < names.size() ; ++i){
+        nameList[i] = (char*) malloc (sizeof(char)*(names[i].length ()+1));
+        strcpy (nameList [i], names[i].c_str ());
+      }
+      return limbsNames;
     }
 
     } // namespace impl

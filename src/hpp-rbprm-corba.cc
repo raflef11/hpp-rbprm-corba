@@ -19,6 +19,9 @@
 #include <hpp/corbaserver/affordance/server.hh>
 #include <hpp/corbaserver/rbprm/server.hh>
 #include <hpp/core/problem-solver.hh>
+#include <hpp/rbprm/planner/steering-dynamic.hh>
+#include <hpp/rbprm/planner/steering-method-parabola.hh>
+#include <hpp/rbprm/planner/dynamic-planner.hh>
 
 typedef hpp::rbprm::Server RbprmServer;
 typedef hpp::corbaServer::Server CorbaServer;
@@ -26,9 +29,10 @@ typedef hpp::affordanceCorba::Server AffordanceServer;
 int main (int argc, char* argv [])
 {
     hpp::core::ProblemSolverPtr_t problemSolver (hpp::core::ProblemSolver::create());
+
+
     CorbaServer corbaServer (problemSolver, argc,
                const_cast<const char**> (argv), true);
-
 		AffordanceServer affordanceServer (argc, const_cast<const char**> (argv),
 																				true);
 		affordanceServer.setProblemSolver (problemSolver);

@@ -93,6 +93,15 @@ module hpp
 		void loadFullBodyRobotFromExistingRobot ()
 			raises (Error);
 
+    /// set a boolean in rbprmFullBody
+    /// if true, the acceleration doesn't account for the stability check
+    void setStaticStability(in boolean staticStability)
+      raises (Error);
+
+    /// set a reference configuration in fullBody
+    void setReferenceConfig(in floatSeq referenceConfig)
+      raises (Error);
+
     /// Set Rom constraints for the configuration shooter
     /// a configuration will only be valid if all roms indicated
     /// are colliding with the environment.
@@ -186,7 +195,7 @@ module hpp
     /// \param dofArray initial configuration of the robot
     /// \param direction desired direction of motion for the robot
     /// \return transformed configuration for which all possible contacts have been created
-    floatSeq generateContacts(in floatSeq dofArray, in floatSeq direction) raises (Error);
+    floatSeq generateContacts(in floatSeq dofArray, in floatSeq direction, in floatSeq acceleration, in double robustnessThreshold) raises (Error);
 
     /// Generate an autocollision free configuration with limbs in contact with the ground
     /// \param contactLimbs name of the limbs to project in contact
@@ -581,6 +590,7 @@ module hpp
     /// \param logFile name of the file where to dump the profiling data
     void dumpProfile(in string logFile) raises (Error);
 
+
     /// set the maximum number of contacts allowed to be broken
     /// \param maxContactBreaks The desired maximum number of contact breaks
     void setMaxContactBreaks(in unsigned short maxContactBreaks) raises (Error);
@@ -598,6 +608,18 @@ module hpp
 
     /// print the required limbs list
     void printRequiredLimbs() raises (Error);
+
+	/// return the time at the given state index
+	/// \param stateId index of the state
+	double getTimeAtState(in unsigned short stateId) raises (Error);
+
+	/// return the contacts variation between two states
+	/// \param stateIdFrom : index of the first state
+	/// \param stateIdTo : index of the second state
+    Names_t getContactsVariations(in unsigned short stateIdFrom,in unsigned short stateIdTo) raises (Error);
+
+    /// return a list of all the limbs names
+    Names_t getAllLimbsNames() raises (Error);
 
     /// tries to add a new contact to the state
     /// if the limb is already in contact, replace the

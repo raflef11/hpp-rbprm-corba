@@ -42,3 +42,9 @@ CMakeLists.txt.user
 build-rel/
 
 log.txt
+
+# noise
+rbprmbuilder.idl.BACKUP.11138.idl
+rbprmbuilder.idl.BASE.11138.idl
+rbprmbuilder.idl.LOCAL.11138.idl
+rbprmbuilder.idl.REMOTE.11138.idl

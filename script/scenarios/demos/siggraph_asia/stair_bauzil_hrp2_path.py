@@ -57,8 +57,8 @@ ps = ProblemSolver( rbprmBuilder )
 
 ps.client.problem.setParameter("aMax",aMax)
 ps.client.problem.setParameter("vMax",vMax)
-ps.client.problem.setParameter("sizeFootX",omniORB.any.to_any(0.24))
-ps.client.problem.setParameter("sizeFootY",omniORB.any.to_any(0.14))
+#ps.client.problem.setParameter("sizeFootX",omniORB.any.to_any(0.24))
+#ps.client.problem.setParameter("sizeFootY",omniORB.any.to_any(0.14))
 ps.client.problem.setParameter("friction",mu)
 
 r = Viewer (ps)

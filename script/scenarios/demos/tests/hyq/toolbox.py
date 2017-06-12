@@ -387,8 +387,8 @@ def weightedCentroidConvex2D(convexPolygon):
 	if len(convexPolygon) == 1:
 		res = convexPolygon[0]
 	elif len(convexPolygon) == 2:
-		res.append((convexPolygon[0][0] + convexPolygon[1][0])/2)
-		res.append((convexPolygon[0][1] + convexPolygon[1][1])/2)
+		res.append((convexPolygon[0][0] + convexPolygon[1][0])/2.0)
+		res.append((convexPolygon[0][1] + convexPolygon[1][1])/2.0)
 	else:
 		# get the longest edge and define the minimum admissible threshold for counting a vertex as a single point
 		maxDist = euclideanDist(convexPolygon[-1], convexPolygon[0])

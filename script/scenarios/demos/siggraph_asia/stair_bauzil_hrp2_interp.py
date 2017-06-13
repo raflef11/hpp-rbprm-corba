@@ -204,7 +204,7 @@ def e(step = 0.5):
 	print "displaying contact plan"
 	contactPlan(step)
 
-fullBody.setMaxContactBreaks(2)
+fullBody.setMaxContactBreaks(1)
 
 d(0.1); e(0.01)
 

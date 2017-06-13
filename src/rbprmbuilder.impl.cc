@@ -2732,6 +2732,12 @@ assert(s2 == s1 +1);
             throw Error ("No full body robot was loaded");
         fullBody_->printRequiredLimbs();
     }
+    void RbprmBuilder::setZmpCostThreshold(double zmpCostThreshold) throw (hpp::Error)
+    {
+        if(!fullBodyLoaded_)
+            throw Error ("No full body robot was loaded");
+        fullBody_->setZmpCostThreshold(zmpCostThreshold);
+    }
 
     void RbprmBuilder::SetProblemSolver (hpp::core::ProblemSolverPtr_t problemSolver)
     {

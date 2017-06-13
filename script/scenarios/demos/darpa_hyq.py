@@ -197,4 +197,6 @@ print "Required limbs :"
 sys.stdout.flush()
 fullBody.printRequiredLimbs()
 
+fullBody.setZmpCostThreshold(0.2)
+
 d(0.004);e(0.01)

@@ -205,6 +205,7 @@ def e(step = 0.5):
 	contactPlan(step)
 
 fullBody.setMaxContactBreaks(1)
+fullBody.setZmpCostThreshold(0.2)
 
 d(0.1); e(0.01)
 

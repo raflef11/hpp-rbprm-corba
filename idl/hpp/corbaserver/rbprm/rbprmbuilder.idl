@@ -609,6 +609,10 @@ module hpp
     /// print the required limbs list
     void printRequiredLimbs() raises (Error);
 
+    /// set the threshold of the cost of a contact state for the ZMP criterion
+    /// (the maximal allowed distance between the ZMP and the center of the convex hull of the support polygon)
+    void setZmpCostThreshold(in double zmpCostThreshold) raises (Error);
+
 	/// return the time at the given state index
 	/// \param stateId index of the state
 	double getTimeAtState(in unsigned short stateId) raises (Error);

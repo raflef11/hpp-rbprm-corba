@@ -1000,3 +1000,7 @@ class FullBody (object):
 	 ## Print the required limbs list
 	 def printRequiredLimbs(self):
 	     self.client.rbprm.rbprm.printRequiredLimbs()
+
+	 ## Set the threshold of the cost of a contact state for the ZMP criterion
+	 def setZmpCostThreshold(self, zmpCostThreshold):
+		 self.client.rbprm.rbprm.setZmpCostThreshold(zmpCostThreshold)

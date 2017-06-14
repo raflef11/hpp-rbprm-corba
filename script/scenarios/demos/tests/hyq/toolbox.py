@@ -302,7 +302,7 @@ def isInside(point, polygon): # We assume that the polygon is sorted (each next 
 	
 	if abs(sumAngles) < 0.0001: # if sumAngles == 0 --> point is outside polygon
 		return False
-	elif abs(sumAngles - 2*math.pi) < 0.0001: # if sumAngles == 2*pi --> point is inside polygon
+	elif (abs(sumAngles - 2*math.pi) < 0.0001) or (abs(sumAngles + 2*math.pi) < 0.0001): # if sumAngles == 2*pi or -2*pi --> point is inside polygon
 		return True
 	else: # impossible case
 		return "Impossible case"

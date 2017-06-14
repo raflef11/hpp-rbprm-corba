@@ -7,6 +7,12 @@ from hyq_ref_pose import hyq_ref
 import toolbox as tools
 import hpp.corbaserver.rbprm.state_alg as state_alg
 
+import sys
+sys.path.insert(0, "../../")
+
+import darpa_hyq_path as tp
+from hpp.gepetto import PathPlayer
+
 rootJointType = "freeflyer"
 urdfSuffix = ""
 srdfSuffix = ""
@@ -44,10 +50,10 @@ fullbody = FullBody()
 fullbody.loadFullBodyModel(urdfName, rootJointType, meshPackageName, packageName, urdfSuffix, srdfSuffix)
 fullbody.setJointBounds("base_joint_xyz", [-2, 5, -1, 1, 0.3, 4])
 
-ps = ProblemSolver(fullbody)
-#r = Viewer(ps, viewerClient=rr.client)
-r = Viewer(ps)
-afftool = AffordanceTool(); afftool.loadObstacleModel("hpp-rbprm-corba", "darpa", "planning", r)
+ps = tp.ProblemSolver(fullbody)
+#r = Viewer(ps)
+r = tp.Viewer(ps, viewerClient=tp.r.client)
+#afftool = AffordanceTool(); afftool.loadObstacleModel("hpp-rbprm-corba", "darpa", "planning", r)
 
 cType = "_3_DOF"
 offset = [0., -0.021, 0.]
@@ -75,14 +81,23 @@ fullbody.addLimb(lLegId, lLeg, lFoot, offset, normal, legx, legy, nbSamples, "jo
 fullbody.addLimb(rArmId, rArm, rHand, offset, normal, legx, legy, nbSamples, "jointlimits", 0.05, cType)
 fullbody.addLimb(lArmId, lArm, lHand, offset, normal, legx, legy, nbSamples, "jointlimits", 0.05, cType)
 
-#fullbody.runLimbSampleAnalysis(rLegId, "jointLimitsDistance", True)
-#fullbody.runLimbSampleAnalysis(lLegId, "jointLimitsDistance", True)
-#fullbody.runLimbSampleAnalysis(rArmId, "jointLimitsDistance", True)
-#fullbody.runLimbSampleAnalysis(lArmId, "jointLimitsDistance", True)
+fullbody.runLimbSampleAnalysis(rLegId, "jointLimitsDistance", True)
+fullbody.runLimbSampleAnalysis(lLegId, "jointLimitsDistance", True)
+fullbody.runLimbSampleAnalysis(rArmId, "jointLimitsDistance", True)
+fullbody.runLimbSampleAnalysis(lArmId, "jointLimitsDistance", True)
 
-q_init = hyq_ref[:]
-#fullbody.setStartState(q_init, [rLegId, lLegId, rArmId, lArmId])
+q_init = hyq_ref[:]; q_init[0:7] = tp.q_init[0:7]; q_init[2]=hyq_ref[2]+0.02
+q_goal = hyq_ref[:]; q_goal[0:7] = tp.q_goal[0:7]; q_init[2]=hyq_ref[2]+0.02
+
+fullbody.setStartState(q_init, [rLegId, lLegId, rArmId, lArmId])
+fullbody.setEndState(q_goal,[rLegId,lLegId,rArmId,lArmId])
+
 r(q_init)
+pp = PathPlayer(fullbody.client.basic, r)
+
+r.client.gui.setVisibility("hyq", "ON")
+tp.r.client.gui.setVisibility("toto", "OFF")
+tp.r.client.gui.setVisibility("hyq_trunk_large", "OFF")
 
 ## HYQ
 # Class to implement additional methods related to Hyq

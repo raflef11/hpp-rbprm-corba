@@ -288,7 +288,7 @@ def isInside(point, polygon): # We assume that the polygon is sorted (each next 
 	if len(polygon) == 2:
 		line, vert = straightLineFromPoints2D(polygon[0], polygon[1])
 		if vert:
-			if point[0] == polygon[0][0]:
+			if abs(point[0] - polygon[0][0]) <= 1e-9: # point[0] == polygon[0][0]
 				if (point[1] < max(polygon[0][1], polygon[1][1])) and (point[1] > min(polygon[0][1], polygon[1][1])):
 					return True
 				else:
@@ -296,7 +296,7 @@ def isInside(point, polygon): # We assume that the polygon is sorted (each next 
 			else:
 				return False
 		else:
-			if abs(point[1] - (line[0]*point[0] + line[1])) < 1e-9: # if point[1] == line[0]*point[0] + line[1]
+			if abs(point[1] - (line[0]*point[0] + line[1])) <= 1e-9: # if point[1] == line[0]*point[0] + line[1]
 				return True
 			else:
 				return False
@@ -373,7 +373,7 @@ def straightLineFromPoints2D(p1, p2):
 		raise MyEx(2)
 
 	# if the straight line is vertical, the equation is of the form x = p1[0]
-	if p1[0] == p2[0]:
+	if abs(p1[0] - p2[0]) <= 1e-9: # if p1[0] == p2[0]
 		return [float("Inf"), float("NaN")], True
 
 	# get the slope

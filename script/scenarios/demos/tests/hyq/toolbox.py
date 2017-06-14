@@ -185,6 +185,9 @@ def angle2D(center, end1, end2):
 	if (len(center) != 2) or (len(end1) != 2) or (len(end2) != 2):
 		raise MyEx(2)
 
+	if end1 == end2:
+		return 0.0
+
 	# get the two vectors
 	v1 = []; v2 = []
 	v1.append(end1[0] - center[0]); v1.append(end1[1] - center[1])
@@ -210,6 +213,9 @@ def orientedAngle2D(center, base, goal):
 	# parameters consistence checking
 	if (len(center) != 2) or (len(base) != 2) or (len(goal) != 2):
 		raise MyEx(2)
+
+	if base == goal:
+		return 0.0
 
 	# get the two vectors
 	vbase = [];	vgoal = []
@@ -274,6 +280,17 @@ def isInside(point, polygon): # We assume that the polygon is sorted (each next 
 	for p in polygon:
 		if len(p) != 2:
 			raise MyEx(2)
+
+	if len(polygon) == 0:
+		return False
+	if len(polygon) == 1:
+		return True if polygon[0] == point else False
+	if len(polygon) == 2:
+		line = straightLineFromPoints2D(polygon[0], polygon[1])
+		if abs(point[1] - (line[0]*point[0] + line[1])) < 1e-9: # if point[1] == line[0]*point[0] + line[1]
+			return True
+		else:
+			return False
 
 	# get the winding number (sumAngles == windingNumber*2*pi)
 	sumAngles = 0.0 # sumAngles is the sum of all subtended angles by each polygon edge from the considered point

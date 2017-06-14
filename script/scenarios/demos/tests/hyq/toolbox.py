@@ -286,11 +286,20 @@ def isInside(point, polygon): # We assume that the polygon is sorted (each next 
 	if len(polygon) == 1:
 		return True if polygon[0] == point else False
 	if len(polygon) == 2:
-		line = straightLineFromPoints2D(polygon[0], polygon[1])
-		if abs(point[1] - (line[0]*point[0] + line[1])) < 1e-9: # if point[1] == line[0]*point[0] + line[1]
-			return True
+		line, vert = straightLineFromPoints2D(polygon[0], polygon[1])
+		if vert:
+			if point[0] == polygon[0][0]:
+				if (point[1] < max(polygon[0][1], polygon[1][1])) and (point[1] > min(polygon[0][1], polygon[1][1])):
+					return True
+				else:
+					return False
+			else:
+				return False
 		else:
-			return False
+			if abs(point[1] - (line[0]*point[0] + line[1])) < 1e-9: # if point[1] == line[0]*point[0] + line[1]
+				return True
+			else:
+				return False
 
 	# get the winding number (sumAngles == windingNumber*2*pi)
 	sumAngles = 0.0 # sumAngles is the sum of all subtended angles by each polygon edge from the considered point
@@ -357,11 +366,15 @@ def distanceToStraightLine2D(point, straightLine):
 # @param [In] p1 A point belonging to the straight line sought
 # @param [In] p2 Another point belonging to the same straight line
 #
-# @return The straight line equation [a, b]
+# @return The straight line equation [a, b]; A boolean which equals True if the straight line is vertical, False otherwise
 def straightLineFromPoints2D(p1, p2):
 	# parameters consistence checking
 	if (len(p1) != 2) or (len(p2) != 2):
 		raise MyEx(2)
+
+	# if the straight line is vertical, the equation is of the form x = p1[0]
+	if p1[0] == p2[0]:
+		return [float("Inf"), float("NaN")], True
 
 	# get the slope
 	a = (p2[1] - p1[1])*1.0/(p2[0] - p1[0])
@@ -369,7 +382,7 @@ def straightLineFromPoints2D(p1, p2):
 	# get the intercept
 	b = p1[1] - a*p1[0]
 
-	return [a, b]
+	return [a, b], False
 
 ## EUCLIDEANDIST
 # Compute the eucliean distance between two vectors

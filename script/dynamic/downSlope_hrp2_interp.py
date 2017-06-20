@@ -102,6 +102,8 @@ fullBody.runLimbSampleAnalysis(lLegId, "jointLimitsDistance", True)
 
 
 
+fullBody.setMaxContactBreaks(1);
+
 from hpp.gepetto import PathPlayer
 pp = PathPlayer (fullBody.client.basic, r)
 
@@ -120,13 +122,13 @@ player = fullBodyPlayerHrp2.Player(fullBody,pp,tp,configs,draw=False,use_window=
 player.displayContactPlan(2.)
 
 
-
+'''
 from planning.slope_config import *
 from generate_contact_sequence import *
 cs = generateContactSequence(fullBody,configs[:-1],r)
 filename = OUTPUT_DIR + "/" + OUTPUT_SEQUENCE_FILE
 cs.saveAsXML(filename, "ContactSequence")
 print "save contact sequence : ",filename
-
+'''
 
 

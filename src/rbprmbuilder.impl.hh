@@ -291,7 +291,6 @@ namespace hpp {
         virtual void removeRequiredLimb(const char * limb) throw (hpp::Error);
         virtual void clearRequiredLimbs() throw (hpp::Error);
         virtual void printRequiredLimbs() throw (hpp::Error);
-        virtual void setZmpCostThreshold(double zmpCostThreshold) throw (hpp::Error);
 
         public:
         void SetProblemSolver (hpp::core::ProblemSolverPtr_t problemSolver);

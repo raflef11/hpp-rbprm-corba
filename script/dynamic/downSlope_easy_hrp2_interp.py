@@ -5,6 +5,7 @@ from hpp.gepetto import Viewer
 import downSlope_easy_hrp2_pathKino as tp
 import time
 
+import omniORB.any
 
 
 packageName = "hrp2_14_description"
@@ -23,8 +24,8 @@ fullBody.setJointBounds ("base_joint_xyz",  [-2,5, 0, 2, 0.45, 1.8])
 fullBody.client.basic.robot.setDimensionExtraConfigSpace(tp.extraDof)
 
 ps = tp.ProblemSolver( fullBody )
-ps.client.problem.setParameter("aMax",tp.aMax)
-ps.client.problem.setParameter("vMax",tp.vMax)
+ps.client.problem.setParameter("aMax",omniORB.any.to_any(tp.aMax))
+ps.client.problem.setParameter("vMax",omniORB.any.to_any(tp.vMax))
 r = tp.Viewer (ps,viewerClient=tp.r.client)
 
 #~ AFTER loading obstacles

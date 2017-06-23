@@ -5,6 +5,8 @@ from hpp.corbaserver.rbprm.rbprmbuilder import Builder
 from hpp.gepetto import Viewer
 import time
 
+import omniORB.any
+
 rootJointType = 'freeflyer'
 packageName = 'hpp-rbprm-corba'
 meshPackageName = 'hpp-rbprm-corba'
@@ -37,8 +39,8 @@ rbprmBuilder.client.basic.robot.setExtraConfigSpaceBounds([-vMax,vMax,-1,1,-2,2,
 # Creating an instance of HPP problem solver and the viewer
 from hpp.corbaserver.rbprm.problem_solver import ProblemSolver
 ps = ProblemSolver( rbprmBuilder )
-ps.client.problem.setParameter("aMax",aMax)
-ps.client.problem.setParameter("vMax",vMax)
+ps.client.problem.setParameter("aMax",omniORB.any.to_any(aMax))
+ps.client.problem.setParameter("vMax",omniORB.any.to_any(vMax))
 r = Viewer (ps)
 
 from hpp.corbaserver.affordance.affordance import AffordanceTool
@@ -130,9 +132,9 @@ pp.speed=0.3
 #display path with post-optimisation
 
 
-ps.client.problem.extractPath(0,0,1.95)
-r.client.gui.removeFromGroup("path_0_root",r.sceneName)
-pp.displayVelocityPath(1)
+#ps.client.problem.extractPath(0,0,1.95)
+#r.client.gui.removeFromGroup("path_0_root",r.sceneName)
+#pp.displayVelocityPath(1)
 #pp (1)
 
 

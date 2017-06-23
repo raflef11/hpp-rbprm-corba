@@ -7,6 +7,8 @@ from hpp.gepetto import Viewer
 #calling script darpa_hyq_path to compute root path
 import downSlope_hyq_pathKino as tp
 
+import omniORB.any
+
 from os import environ
 ins_dir = environ['DEVEL_DIR']
 db_dir = ins_dir+"/install/share/hyq-rbprm/database/hyq_"
@@ -33,8 +35,8 @@ nbSamples = 20000
 dynamic=True
 
 ps = tp.ProblemSolver(fullBody)
-ps.client.problem.setParameter("aMax",tp.aMax)
-ps.client.problem.setParameter("vMax",tp.vMax)
+ps.client.problem.setParameter("aMax",omniORB.any.to_any(tp.aMax))
+ps.client.problem.setParameter("vMax",omniORB.any.to_any(tp.vMax))
 r = tp.Viewer (ps,viewerClient=tp.r.client)
 
 rootName = 'base_joint_xyz'
@@ -101,8 +103,10 @@ player = Player(fullBody,pp,tp,configs,draw=True,optim_effector=False,use_veloci
 
 #player.displayContactPlan()
 
-r(configs[15])
-player.interpolate(15,60)
+#r(configs[15])
+r(configs[len(configs)-1])
+#player.interpolate(15,60)
+player.interpolate(15)
 
 #player.play()
 

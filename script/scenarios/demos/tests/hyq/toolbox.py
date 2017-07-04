@@ -814,7 +814,7 @@ def evalZMP(convexHull, comPos, comAccel, g = -9.80665):
 		if (abs(comAccel[0]) > epsi) or (abs(comAccel[1]) > epsi): # (comAccel[0] != 0) or (comAccel[1] != 0)
 			return float("Inf")
 		else:
-			return 0.0
+			return euclideanDist([comPos[0], comPos[1]], weightedCentroidConvex2D(convexHull))
 
 	# determine the ZMP position
 	x_zmp = comPos[0] - (comPos[2]/zAccel)*comAccel[0]

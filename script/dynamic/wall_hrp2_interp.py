@@ -143,8 +143,9 @@ r(q_init)
 fullBody.setStartState(q_init,[rLegId,lLegId])
 fullBody.setEndState(q_goal,[rLegId,lLegId])
 
-fullBody.setMaxContactBreaks(2)
-
+fullBody.setMaxContactBreaks(1)
+fullBody.addRequiredLimb("hrp2_lleg_rom")
+fullBody.addRequiredLimb("hrp2_rleg_rom")
 
 from hpp.gepetto import PathPlayer
 from fullBodyPlayerHrp2 import Player

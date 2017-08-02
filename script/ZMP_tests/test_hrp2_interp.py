@@ -30,7 +30,8 @@ rLegOffset = [0, 0, -0.105]
 rLegNormal = [0, 0, 1]
 rLegx = 0.09
 rLegy = 0.05
-fullBody.addLimb(rLegId, rLeg, "", rLegOffset, rLegNormal, rLegx, rLegy, 20000, "ZMP", 0.1)
+#fullBody.addLimb(rLegId, rLeg, "", rLegOffset, rLegNormal, rLegx, rLegy, 20000, "ZMP", 0.1)
+fullBody.addLimb(rLegId, rLeg, "", rLegOffset, rLegNormal, rLegx, rLegy, 20000, "dynamic", 0.1)
 
 lLegId = "hrp2_lleg_rom"
 lLeg = "LLEG_JOINT0"
@@ -38,7 +39,8 @@ lLegOffset = [0, 0, -0.105]
 lLegNormal = [0, 0, 1]
 lLegx = 0.09
 lLegy = 0.05
-fullBody.addLimb(lLegId, lLeg, "", lLegOffset, lLegNormal, lLegx, lLegy, 20000, "ZMP", 0.1)
+#fullBody.addLimb(lLegId, lLeg, "", lLegOffset, lLegNormal, lLegx, lLegy, 20000, "ZMP", 0.1)
+fullBody.addLimb(lLegId, lLeg, "", lLegOffset, lLegNormal, lLegx, lLegy, 20000, "dynamic", 0.1)
 
 q_0 = fullBody.getCurrentConfig()
 q_init =[0.1, 0.0, 0.648702, 1.0, 0.0 , 0.0, 0.0,0.0, 0.0, 0.0, 0.0,0.261799388,  0.174532925, 0.0, -0.523598776, 0.0, 0.0, 0.17,0.261799388, -0.174532925, 0.0, -0.523598776, 0.0, 0.0, 0.17,0.0, 0.0, -0.453785606, 0.872664626, -0.41887902, 0.0,0.0, 0.0, -0.453785606, 0.872664626, -0.41887902, 0.0,0,0,0,0,0,0]
